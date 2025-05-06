@@ -1,10 +1,10 @@
 export default class User {
+    public readonly id?: number;
     constructor(
-        public readonly id: string,
-        public name: string,
-        public email: string,
-        public password: string,
-        public rules: Array<string>,
+        public name?: string,
+        public email?: string,
+        public password?: string,
+        public rules?: Array<string>,
     ) {}
     
 }
