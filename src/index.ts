@@ -1,13 +1,16 @@
-import express, { Request, Response } from 'express';
-import Api from './routes/Api';
-const app = express();
+import 'reflect-metadata';
+import { createExpressServer } from 'routing-controllers';
+import { ApiControllers } from './routes/Api';
+
+
+const app = createExpressServer({
+    controllers: ApiControllers,
+});
 
 const PORT = 3000;
 
-app.use(express.json())
-// Route
-Api(app)
 
-app.listen(PORT, async(err) => {
-    err ? console.error(err) : '';
+
+app.listen(PORT, () => {
+    console.log("Server running on port 3000");
 })

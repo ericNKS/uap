@@ -7,7 +7,9 @@
       "strict": true,                // Ativa as verificações estritas de tipo
       "esModuleInterop": true,       // Habilita a interoperabilidade entre módulos ES e CommonJS
       "skipLibCheck": true,          // Ignora checagem de tipos em arquivos de definição de bibliotecas
-      "forceConsistentCasingInFileNames": true // Garante consistência no nome dos arquivos
+      "forceConsistentCasingInFileNames": true, // Garante consistência no nome dos arquivos
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
     },
     "include": [
       "src/**/*.ts"                  // Inclui todos os arquivos .ts dentro da pasta src
