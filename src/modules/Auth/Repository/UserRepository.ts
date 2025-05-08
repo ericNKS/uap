@@ -28,12 +28,37 @@ export default class UserRepository implements IRepository{
     }
     async update(): Promise<User> {return new User()}
     async findByEmail(): Promise<User> {return new User()}
-    async findById(): Promise<User> {return new User()}
+    async findById(id: number): Promise<User> {
+        const query = `
+            SELECT
+                id, name, email, rules
+            FROM
+                users
+            where id = $1
+        `;
+        try {
+            const result = await this.db.query(query, [id]);
+
+            const user = result.rows[0] as User;
+            return user;
+        } catch (error) {
+            throw error
+        }
+    }
     async remove(): Promise<void> {}
     
-    async findByAll(): Promise<any> {
-        const result = await this.db.query('SELECT * FROM users')
-
-        return result.rows;
+    async findAll(): Promise<Array<User>> {
+        const query = `
+            SELECT
+                id, name, email, rules
+            FROM
+                users
+        `;
+        try {
+            const result = await this.db.query(query);
+            return result.rows as User[];
+        } catch (error) {
+            throw new Error(`Failed to fetch users: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
     }
 }

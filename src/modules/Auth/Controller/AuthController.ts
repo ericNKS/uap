@@ -7,6 +7,15 @@ import UserRepository from "../Repository/UserRepository";
 import { Postgres } from "../../../config/database/Postgres";
 
 export default class AuthController {
+    static async index(
+        req: FastifyRequest,
+        reply: FastifyReply,
+    ) {
+        const userRepository = new UserRepository(Postgres);
+        const users = await userRepository.findById(1)
+
+        return users
+    }
     static async store(
         req: FastifyRequest,
         reply: FastifyReply,
