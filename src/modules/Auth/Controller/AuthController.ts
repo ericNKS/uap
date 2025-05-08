@@ -23,31 +23,50 @@ export default class AuthController {
     ) {
         const userData = plainToInstance(CreateUserRequest, req.body);
         const validationsErr = await validate(userData);
-        const err = FormExceptions(validationsErr)
+        const err = FormExceptions(validationsErr);
 
         if(err) {
             return reply.code(400).send({ err });
         }
 
-        const userRepository = new UserRepository(Postgres)
+        const userRepository = new UserRepository(Postgres);
 
-        const createUserService = new CreateUser(userRepository)
+        const createUserService = new CreateUser(userRepository);
 
-        const user = createUserService.execute(userData)
-        return reply.send(user)
+        const user = createUserService.execute(userData);
+        return reply.code(201).send(user);
     }
 
     static async show(
         req: FastifyRequest<{Params: {id: number}}>,
         reply: FastifyReply,
     ) {
-        const {id} = req.params
+        const {id} = req.params;
 
         const userRepo = new UserRepository(Postgres);
-        const user = await userRepo.findById(id)
+        const user = await userRepo.findById(id);
 
-        return reply.send(user)
+        return reply.send(user);
     }
 
+    static async delete(
+        req: FastifyRequest<{Params: {id: number}}>,
+        reply: FastifyReply,
+    ) {
+        const {id} = req.params;
+
+        const userRepo = new UserRepository(Postgres)
+        const user = await userRepo.findById(id)
+
+        if(!user) {
+            return reply.code(404).send({
+                error: 'user not found'
+            })
+        }
+
+        await userRepo.remove(id)
+
+        return reply.code(204).send();
+    }
     
 }

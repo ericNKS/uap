@@ -45,7 +45,7 @@ export default class UserRepository implements IRepository{
             throw error
         }
     }
-    async remove(): Promise<void> {}
+    async remove(id: number): Promise<void> {}
     
     async findAll(): Promise<Array<User>> {
         const query = `
