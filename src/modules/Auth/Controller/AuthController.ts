@@ -5,6 +5,7 @@ import { validate } from "class-validator";
 import CreateUser from "../UseCase/CreateUser";
 import UserRepository from "../Repository/UserRepository";
 import { Postgres } from "../../../config/database/Postgres";
+import FormExceptions from "../../../utils/FormExceptions";
 
 export default class AuthController {
     static async index(
@@ -21,10 +22,11 @@ export default class AuthController {
         reply: FastifyReply,
     ) {
         const userData = plainToInstance(CreateUserRequest, req.body);
-        const errors = await validate(userData);
+        const validationsErr = await validate(userData);
+        const err = FormExceptions(validationsErr)
 
-        if (errors.length > 0) {
-            return reply.code(400).send({ errors });
+        if(err) {
+            return reply.code(400).send({ err });
         }
 
         const userRepository = new UserRepository(Postgres)

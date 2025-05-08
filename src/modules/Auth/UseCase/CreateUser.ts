@@ -15,7 +15,15 @@ export default class CreateUser {
             userRequest.rules ?? ['RULE_USER']
         );
         
+        this.validateUser(userRequest)
+
         const user = await this.userRepository.save(userToSave)
         return user;
+    }
+
+    private validateUser(user: CreateUserRequest) {
+        if(user.password.first !== user.password.second) {
+            throw new Error('password validation is invalid')
+        }
     }
 }
