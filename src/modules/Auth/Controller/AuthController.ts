@@ -13,9 +13,9 @@ export default class AuthController {
         reply: FastifyReply,
     ) {
         const userRepository = new UserRepository(Postgres);
-        const users = await userRepository.findById(1)
+        const users = await userRepository.findAll();
 
-        return users
+        return reply.send(users)
     }
     static async store(
         req: FastifyRequest,
@@ -34,6 +34,20 @@ export default class AuthController {
         const createUserService = new CreateUser(userRepository)
 
         const user = createUserService.execute(userData)
-        return user
+        return reply.send(user)
     }
+
+    static async show(
+        req: FastifyRequest<{Params: {id: number}}>,
+        reply: FastifyReply,
+    ) {
+        const {id} = req.params
+
+        const userRepo = new UserRepository(Postgres);
+        const user = await userRepo.findById(id)
+
+        return reply.send(user)
+    }
+
+    
 }
