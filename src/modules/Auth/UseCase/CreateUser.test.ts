@@ -1,4 +1,4 @@
-import CreateUserRequest from "../DTO/CreateUserRequest"
+import {CreateUserRequest} from "../DTO/CreateUserRequest"
 import User from "../Entities/User"
 import IRepository from "../Interfaces/IRepository"
 import CreateUser from "./CreateUser"
@@ -16,11 +16,14 @@ describe('Testando CreateUser UseCase', () => {
     })
 
     it('Deve registrar um usuario que nao existe', async ()=> {
-        const userToRegister = new CreateUserRequest(
-            'Eric',
-            'eric@gmail.com',
-            '12345678rb'
-        );
+        const userToRegister: CreateUserRequest = {
+            name: 'Eric',
+            email: 'eric@gmail.com',
+            password: {
+                first: '12345678rb',
+                second: '12345678rb'
+            }
+        };
 
         const userExpected: User = {
             id: 1,
