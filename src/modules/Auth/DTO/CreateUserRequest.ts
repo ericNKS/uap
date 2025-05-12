@@ -1,4 +1,4 @@
-import { IsString, IsEmail, MinLength, ValidateNested, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsEmail, MinLength, ValidateNested, IsOptional, IsArray, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class PasswordDTO {
@@ -13,17 +13,37 @@ class PasswordDTO {
 
 export class CreateUserRequest {
   @IsString()
-  name: string = '';
+  nomeUser: string = '';
 
   @IsEmail()
-  email: string = '';
+  emailUser: string = '';
 
   @ValidateNested()
   @Type(() => PasswordDTO)
-  password: PasswordDTO = new PasswordDTO();
+  senhaUser: PasswordDTO = new PasswordDTO();
 
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  rules?: string[];
+  @IsString()
+  telUser: string = '';
+
+  @IsString()
+  @Max(16)
+  @Min(11)
+  cpforcnpjUser: string = '';
+
+  @IsString()
+  crpUser: string = '';
+
+  @IsString()
+  imgurlUser: string = '';
+
+  @IsString()
+  genUser: string = '';
+
+  @IsString()
+  rulesUser: string = '';
+
+  @IsString()
+  @Max(1)
+  stsativoUser: string = '';
+
 }
