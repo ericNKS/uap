@@ -1,11 +1,12 @@
 export default class User {
-    public readonly idUser: number = 0;
+    public readonly idUser?: number = 0;
     public nomeuser: string = '';
     public emailuser: string = '';
     public senhauser: string = '';
-    public teluser: string = '';
+    public teluser?: string = '';
     public cpforcnpjuser: string = '';
-    public imgurluser: string = '';
+    public crpuser?: string = '';
+    public imgurluser?: string = '';
     public genuser: string = '';
     public rulesuser: string = '';
     public stsativouser: string = '';
@@ -18,6 +19,7 @@ export default class User {
             senhauser: this.senhauser,
             teluser: this.teluser,
             cpforcnpjuser: this.cpforcnpjuser,
+            crpuser: this.crpuser,
             imgurluser: this.imgurluser,
             genuser: this.genuser,
             rulesuser: this.rulesuser,
