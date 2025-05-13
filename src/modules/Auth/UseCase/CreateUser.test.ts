@@ -1,6 +1,6 @@
 import { CreateUserRequest } from "../DTO/CreateUserRequest"
 import User from "../Entities/User"
-import IRepository from "../Interfaces/IRepository"
+import IRepository from "../Interfaces/IUserRepository"
 import CreateUser from "./CreateUser"
 import bcrypt from "bcrypt"
 

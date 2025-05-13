@@ -1,6 +1,6 @@
 import User from "../Entities/User";
 
-export default interface IRepository {
+export default interface IUserRepository {
     save: (user: User) => Promise<User>,
     update: (user: User) => Promise<User>,
     findByEmail: (email: string) => Promise<User>,

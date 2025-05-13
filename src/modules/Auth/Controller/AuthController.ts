@@ -4,7 +4,7 @@ import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import CreateUser from "../UseCase/CreateUser";
 import UserRepository from "../Repository/UserRepository";
-import { Postgres } from "../../../config/database/Postgres";
+import { Database } from "../../../config/database/Database";
 import FormExceptions from "../../../utils/FormExceptions";
 
 export default class AuthController {
@@ -12,7 +12,7 @@ export default class AuthController {
         req: FastifyRequest,
         reply: FastifyReply,
     ) {
-        const userRepository = new UserRepository(Postgres);
+        const userRepository = new UserRepository(Database);
         const users = await userRepository.findAll();
 
         return reply.send(users)
@@ -29,7 +29,7 @@ export default class AuthController {
             return reply.code(400).send({ err });
         }
 
-        const userRepository = new UserRepository(Postgres);
+        const userRepository = new UserRepository(Database);
 
         const createUserService = new CreateUser(userRepository);
 
@@ -43,7 +43,7 @@ export default class AuthController {
     ) {
         const {id} = req.params;
 
-        const userRepo = new UserRepository(Postgres);
+        const userRepo = new UserRepository(Database);
         const user = await userRepo.findById(id);
 
         return reply.send(user);
@@ -55,7 +55,7 @@ export default class AuthController {
     ) {
         const {id} = req.params;
 
-        const userRepo = new UserRepository(Postgres)
+        const userRepo = new UserRepository(Database)
         const user = await userRepo.findById(id)
 
         if(!user) {

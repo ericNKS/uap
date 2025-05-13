@@ -1,11 +1,11 @@
 import {CreateUserRequest} from "../DTO/CreateUserRequest";
 import User from "../Entities/User";
-import IRepository from "../Interfaces/IRepository";
+import IUserRepository from "../Interfaces/IUserRepository";
 import bcrypt from "bcrypt"
 
 export default class CreateUser {
     public constructor(
-        private userRepository: IRepository
+        private userRepository: IUserRepository
     ) {}
 
     public async execute(userRequest: CreateUserRequest): Promise<User> {
