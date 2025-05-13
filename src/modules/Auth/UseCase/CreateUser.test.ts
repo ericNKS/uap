@@ -19,25 +19,33 @@ describe('Testando CreateUser UseCase', () => {
         };
 
         // Mock do bcrypt
-        (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
+        (bcrypt.hash as jest.Mock).mockImplementation((password, saltRounds) => {
+            return Promise.resolve('hashed-password');
+        });
     });
 
     it('Deve registrar um usuario que nao existe', async () => {
         const userToRegister: CreateUserRequest = {
-            name: 'Eric',
-            email: 'eric@gmail.com',
-            password: {
+            nomeUser: 'Eric',
+            emailUser: 'eric@gmail.com',
+            senhaUser: {
                 first: '12345678rb',
                 second: '12345678rb'
-            }
+            },
+            cpfOrCnpjUser: '24858927091',
+            genUser: 'Honda Civic',
         };
 
         const userExpected: User = {
-            id: 1,
-            name: 'Eric',
-            email: 'eric@gmail.com',
-            password: 'hashed-password'
-        };
+            idUser: 1,
+            nomeuser: 'Eric',
+            emailuser: 'eric@gmail.com',
+            senhauser: 'hashed-password',
+            cpforcnpjuser: '24858927091',
+            genuser: 'Honda Civic',
+            rulesuser: 'RULE_USER',
+            stsativouser: 'n',
+        } as User;
 
         userRepository.save.mockResolvedValue(userExpected);
 
@@ -47,9 +55,13 @@ describe('Testando CreateUser UseCase', () => {
 
         expect(user).toEqual(userExpected);
         expect(userRepository.save).toHaveBeenCalledWith(expect.objectContaining({
-            name: 'Eric',
-            email: 'eric@gmail.com',
-            password: 'hashed-password'
+            nomeuser: 'Eric',
+            emailuser: 'eric@gmail.com',
+            senhauser: 'hashed-password',
+            cpforcnpjuser: '24858927091',
+            genuser: 'Honda Civic',
+            rulesuser: 'RULE_USER',
+            stsativouser: 'n'
         }));
     });
 });

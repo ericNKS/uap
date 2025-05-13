@@ -23,27 +23,31 @@ export class CreateUserRequest {
   senhaUser: PasswordDTO = new PasswordDTO();
 
   @IsString()
-  telUser: string = '';
+  @IsOptional()
+  telUser?: string = '';
 
   @IsString()
   @Max(16)
   @Min(11)
-  cpforcnpjUser: string = '';
+  cpfOrCnpjUser: string = '';
 
   @IsString()
-  crpUser: string = '';
+  @IsOptional()
+  crpUser?: string = '';
 
   @IsString()
-  imgurlUser: string = '';
+  @IsOptional()
+  imgurlUser?: string = '';
 
   @IsString()
   genUser: string = '';
 
   @IsString()
-  rulesUser: string = '';
+  @IsOptional()
+  rulesUser?: string = 'RULE_USER';
 
   @IsString()
   @Max(1)
-  stsativoUser: string = '';
+  stsativoUser?: string = 'n';
 
 }
