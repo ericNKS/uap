@@ -8,10 +8,10 @@ export default class User {
     public crpuser?: string = '';
     public imgurluser?: string = '';
     public genuser: string = '';
-    public rulesuser: string = '';
+    public rulesuser: string = 'paciente';
     public stsativouser: string = '';
 
-    public toJson(): User {
+    public toJson(): Record<string, any> {
         return {
             idUser: this.idUser,
             nomeuser: this.nomeuser,
@@ -24,6 +24,6 @@ export default class User {
             genuser: this.genuser,
             rulesuser: this.rulesuser,
             stsativouser: this.stsativouser,
-        } as User
+        }
     }
 }
