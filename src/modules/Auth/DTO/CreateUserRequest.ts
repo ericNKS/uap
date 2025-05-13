@@ -1,4 +1,4 @@
-import { IsString, IsEmail, MinLength, ValidateNested, IsOptional, IsArray, Max, Min } from 'class-validator';
+import { IsString, IsEmail, MinLength, ValidateNested, IsOptional, IsArray, Max, Min, Length } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class PasswordDTO {
@@ -27,8 +27,7 @@ export class CreateUserRequest {
   telUser?: string = '';
 
   @IsString()
-  @Max(16)
-  @Min(11)
+  @Length(11, 16)
   cpfOrCnpjUser: string = '';
 
   @IsString()
@@ -47,7 +46,6 @@ export class CreateUserRequest {
   rulesUser?: string = 'RULE_USER';
 
   @IsString()
-  @Max(1)
-  stsativoUser?: string = 'n';
+  userType: string = 'paciente'
 
 }

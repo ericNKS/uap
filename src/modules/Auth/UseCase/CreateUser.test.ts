@@ -1,17 +1,19 @@
 import { CreateUserRequest } from "../DTO/CreateUserRequest"
 import User from "../Entities/User"
 import IRepository from "../Interfaces/IUserRepository"
+import { RulesEnum } from "../Utils/RulesEnum"
 import CreateUser from "./CreateUser"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 
-jest.mock("bcrypt")
+jest.mock("bcryptjs")
 
-describe('Testando CreateUser UseCase', () => {
+describe('Testando criação do paciente', () => {
     let userRepository: jest.Mocked<IRepository>;
 
     beforeAll(() => {
         userRepository = {
-            save: jest.fn(),
+            createPaciente: jest.fn(),
+            createEspecialista: jest.fn(),
             update: jest.fn(),
             findByEmail: jest.fn(),
             findById: jest.fn(),
@@ -34,6 +36,7 @@ describe('Testando CreateUser UseCase', () => {
             },
             cpfOrCnpjUser: '24858927091',
             genUser: 'Honda Civic',
+            userType: RulesEnum.paciente
         };
 
         const userExpected: User = {
@@ -47,14 +50,14 @@ describe('Testando CreateUser UseCase', () => {
             stsativouser: 'n',
         } as User;
 
-        userRepository.save.mockResolvedValue(userExpected);
+        userRepository.createPaciente.mockResolvedValue(userExpected);
 
         const createUserService = new CreateUser(userRepository);
 
-        const user = await createUserService.execute(userToRegister);
+        const user = await createUserService.paciente(userToRegister);
 
         expect(user).toEqual(userExpected);
-        expect(userRepository.save).toHaveBeenCalledWith(expect.objectContaining({
+        expect(userRepository.createPaciente).toHaveBeenCalledWith(expect.objectContaining({
             nomeuser: 'Eric',
             emailuser: 'eric@gmail.com',
             senhauser: 'hashed-password',

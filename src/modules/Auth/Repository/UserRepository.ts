@@ -7,34 +7,75 @@ export default class UserRepository implements IUserRepository {
         private db: mysql.Pool
     ) {}
     
-    async save(user: User): Promise<User> {
-        const query = `
-            INSERT INTO users (
-                nomeuser, emailuser, senhauser,
-                teluser, cpforcnpjuser, crpuser,
-                imgurluser, genuser, rulesuser, stsativouser
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+    async createPaciente(user: User): Promise<User> {
+        let connection;
+        const query = `CALL spregistrarpaciente(?,?,?,?,?,?)`;
     
         try {
-            const [result] = await this.db.query(query, [
+            connection = await this.db.getConnection();
+            
+            await connection.execute(query, [
+                user.nomeuser,
+                user.emailuser,
+                user.senhauser,
+                user.teluser,
+                user.cpforcnpjuser,
+                user.genuser,
+            ]);
+            
+            const [newUsers] = await connection.execute<mysql.RowDataPacket[]>(
+                'SELECT iduser FROM users WHERE cpforcnpjuser = ? LIMIT 1',
+                [user.cpforcnpjuser]
+            );
+            
+            if (newUsers.length === 0) {
+                throw new Error('Erro ao criar o paciente: Usuário não encontrado após inserção');
+            }
+            
+            const idUser = newUsers[0].iduser;
+            
+            return {...user, idUser} as User;
+        } catch (error) {
+            throw error;
+        } finally {
+            if (connection) connection.release();
+        }
+    }
+
+    async createEspecialista(user: User): Promise<User> {
+        let connection;
+        const query = `CALL spregistrarespecialista(?,?,?,?,?,?,?,?)`;
+    
+        try {
+            connection = await this.db.getConnection();
+            
+            await connection.execute(query, [
                 user.nomeuser,
                 user.emailuser,
                 user.senhauser,
                 user.teluser,
                 user.cpforcnpjuser,
                 user.crpuser,
-                user.imgurluser,
                 user.genuser,
-                user.rulesuser,
-                user.stsativouser,
+                user.rulesuser
             ]);
             
-            const idUser = (result as mysql.ResultSetHeader).insertId;
+            const [newUsers] = await connection.execute<mysql.RowDataPacket[]>(
+                'SELECT iduser FROM users WHERE cpforcnpjuser = ? LIMIT 1',
+                [user.cpforcnpjuser]
+            );
+            
+            if (newUsers.length === 0) {
+                throw new Error('Erro ao criar o paciente: Usuário não encontrado após inserção');
+            }
+            
+            const idUser = newUsers[0].iduser;
+            
             return {...user, idUser} as User;
         } catch (error) {
             throw error;
+        } finally {
+            if (connection) connection.release();
         }
     }
     

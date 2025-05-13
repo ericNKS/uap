@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { CreateUserRequest } from "../DTO/CreateUserRequest";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
-import CreateUser from "../UseCase/CreateUser";
+import CreateUserPaciente from "../UseCase/CreateUser";
 import UserRepository from "../Repository/UserRepository";
 import { Database } from "../../../config/database/Database";
 import FormExceptions from "../../../utils/FormExceptions";
@@ -21,20 +21,28 @@ export default class AuthController {
         req: FastifyRequest,
         reply: FastifyReply,
     ) {
-        const userData = plainToInstance(CreateUserRequest, req.body);
-        const validationsErr = await validate(userData);
-        const err = FormExceptions(validationsErr);
-
-        if(err) {
-            return reply.code(400).send({ err });
+        try {
+            const userData = plainToInstance(CreateUserRequest, req.body);
+            const validationsErr = await validate(userData);
+            const err = FormExceptions(validationsErr);
+            
+            if(err) {
+                return reply.code(400).send({ err });
+            }
+            
+            const userRepository = new UserRepository(Database);
+            
+            const createUserService = new CreateUserPaciente(userRepository);
+            
+            const user = await createUserService.paciente(userData);
+            
+            return reply.code(201).send({
+                success: user,
+                mudou: true
+            });
+        } catch (error) {
+            return reply.code(500).send({error});
         }
-
-        const userRepository = new UserRepository(Database);
-
-        const createUserService = new CreateUser(userRepository);
-
-        const user = createUserService.execute(userData);
-        return reply.code(201).send(user);
     }
 
     static async show(
