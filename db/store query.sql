@@ -16,6 +16,7 @@ CpfOrCnpjUser VARCHAR(20) NOT NULL,
 CrpUser VARCHAR(10),
 ImgUrlUser TEXT,
 GenUser VARCHAR(30) NOT NULL,
+PronomeUser VARCHAR(10) NOT NULL,
 RulesUser VARCHAR(30) NOT NULL DEFAULT 'RULE_PACIENTE',
 StsAtivoUser CHAR(1) NOT NULL
 );
@@ -74,7 +75,8 @@ CREATE PROCEDURE spRegistrarPaciente(
 	IN pSenhaUser VARCHAR(100),
 	IN pTelUser VARCHAR(20),
 	IN pCpfOrCnpjUser VARCHAR(18),
-	IN pGenUser VARCHAR(30)
+	IN pGenUser VARCHAR(30),
+	IN pPronomeUser VARCHAR(10)
 )
 BEGIN
 	DECLARE vIdUser BIGINT DEFAULT 0;
@@ -85,8 +87,8 @@ BEGIN
 	GROUP BY(u.IdUser);
 	
 	if vIdUser = 0 then
-		INSERT INTO users (NomeUser, EmailUser, SenhaUser, TelUser, CpfOrCnpjUser, GenUser, StsAtivoUser)
-		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pGenUser, 's');
+		INSERT INTO users (NomeUser, EmailUser, SenhaUser, TelUser, CpfOrCnpjUser, GenUser, PronomeUser, StsAtivoUser)
+		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pGenUser, pPronomeUser, 's');
 	END if;
 END
 $$
@@ -100,7 +102,8 @@ CREATE PROCEDURE spRegistrarEspecialista(
 	IN pTelUser VARCHAR(20),
 	IN pCpfOrCnpjUser VARCHAR(18),
 	IN pCrpUser VARCHAR(10),
-	IN pGenUser VARCHAR(30)
+	IN pGenUser VARCHAR(30),
+	IN pPronomeUser VARCHAR(10)
 )
 BEGIN
 	DECLARE vIdUser BIGINT DEFAULT 0;
@@ -111,8 +114,8 @@ BEGIN
 	GROUP BY(u.IdUser);
 	
 	if viduser = 0 then
-		INSERT INTO users (NomeUser, EmailUser, SenhaUser, TelUser, CpfOrCnpjUser, CrpUser, GenUser, RulesUser, StsAtivoUser)
-		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pCrpUser, pGenUser, 'RULE_ESPECIALISTA_PENDENTE', 's');
+		INSERT INTO users (NomeUser, EmailUser, SenhaUser, TelUser, CpfOrCnpjUser, CrpUser, GenUser, PronomeUser, RulesUser, StsAtivoUser)
+		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pCrpUser, pGenUser, pPronomeUser, 'RULE_ESPECIALISTA_PENDENTE', 's');
 	END if;
 END
 $$
@@ -137,7 +140,8 @@ BEGIN
 			 u.NomeUser AS 'Nome do Paciente',
 			 u.EmailUser AS 'Email do Paciente', 
 			 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Paciente',
-			 u.GenUser AS 'Gênero do Paciente'
+			 u.GenUser AS 'Gênero do Paciente',
+			 u.pPronomeUser AS 'Pronome do Paciente'
 	FROM users u
 	WHERE u.StsAtivoUser = 's'
 	AND u.RulesUser = 'RULE_PACIENTE';	
@@ -154,7 +158,8 @@ BEGIN
 			 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Especialista',
 			 sfFormatarCrp(u.CrpUser) AS 'CRP do Especialista',
 			 u.ImgUrlUser AS 'Imagem do Especialista',
-			 u.GenUser AS 'Gênero do Especialista'
+			 u.GenUser AS 'Gênero do Especialista',
+			 u.pPronomeUser AS 'Pronome do Especialista'
 	FROM users u
 	WHERE u.StsAtivoUser = 's'
 	AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO';	
@@ -171,7 +176,8 @@ BEGIN
 			 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Especialista',
 			 sfFormatarCrp(u.CrpUser) AS 'CRP do Especialista',
 			 u.ImgUrlUser AS 'Imagem do Especialista',
-			 u.GenUser AS 'Gênero do Especialista'
+			 u.GenUser AS 'Gênero do Especialista',
+			 u.pPronomeUser AS 'Pronome do Especialista'
 	FROM users u
 	WHERE u.StsAtivoUser = 's'
 	AND u.RulesUser = 'RULE_ESPECIALISTA_PENDENTE';	
@@ -186,7 +192,8 @@ BEGIN
 			 u.NomeUser AS 'Nome do Usuário',
 			 u.EmailUser AS 'Email do Usuário',
 			 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Usuário',
-			 u.GenUser AS 'Gênero do Usuário'
+			 u.GenUser AS 'Gênero do Usuário',
+			 u.pPronomeUser AS 'Pronome do UsuáriospListarPacientesspListarPacientes'
 	FROM users u
 	WHERE u.StsAtivoUser = 'n';	
 END

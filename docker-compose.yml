@@ -7,7 +7,7 @@ services:
       MYSQL_USER: ${DB_USER:-app}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-!ChangeMe!}
     ports:
-      - "3306:3306"
+      - "3307:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USER:-app}", "-p${DB_PASSWORD:-!ChangeMe!}"]
       timeout: 5s
