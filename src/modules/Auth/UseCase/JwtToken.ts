@@ -13,7 +13,9 @@ export default class JwtToken {
         return Jwt.sign(payload, this.secret, options || defaultOptions);
     }
 
-    public static decode(token: string): object | null | string {
-        return Jwt.decode(token);
+    public static decode(token: string): User {
+        const result = Jwt.decode(token);
+        
+        return result as User
     }
 }

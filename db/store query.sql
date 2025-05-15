@@ -23,7 +23,7 @@ StsAtivoUser CHAR(1) NOT NULL
 
 
 CREATE TABLE if NOT EXISTS consultas(
-IdConsulta BIGINT AUTO_INCREMENT PRIMARY KEY,
+IdConsulta BIGINT AUTO_INCREME																																														NT PRIMARY KEY,
 IdPaciente BIGINT,
 IdEspecialista BIGINT,
 DtConsulta DATE NOT NULL,

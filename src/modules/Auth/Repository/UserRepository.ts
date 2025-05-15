@@ -83,7 +83,11 @@ export default class UserRepository implements IUserRepository {
     
     async findByEmail(email: string): Promise<User> {
         const query = `
-            SELECT *
+            SELECT
+                IdUser as idUser, NomeUser as nomeuser, 
+                EmailUser as emailuser, SenhaUser as senhauser, TelUser as teluser,
+                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
+                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
             FROM users
             WHERE emailuser = ?
         `;
@@ -113,9 +117,13 @@ export default class UserRepository implements IUserRepository {
     
     async findById(id: number): Promise<User> {
         const query = `
-            SELECT *
+            SELECT
+                IdUser as idUser, NomeUser as nomeuser, 
+                EmailUser as emailuser, TelUser as teluser,
+                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
+                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
             FROM users
-            WHERE id = ?
+            WHERE idUser = ?
         `;
         try {
             const [rows] = await this.db.query(query, [id]);
@@ -130,7 +138,11 @@ export default class UserRepository implements IUserRepository {
     
     async findAll(): Promise<Array<User>> {
         const query = `
-            SELECT *
+            SELECT
+                IdUser as idUser, NomeUser as nomeuser, 
+                EmailUser as emailuser, TelUser as teluser,
+                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
+                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as ruleuser
             FROM users
         `;
         try {

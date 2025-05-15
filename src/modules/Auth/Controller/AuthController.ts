@@ -10,19 +10,12 @@ import User from "../Entities/User";
 import JwtToken from "../UseCase/JwtToken";
 import ExceptionValidation from "../Utils/ExceptionValidation";
 import UserResponse from "../DTO/UserResponse";
+import { LoginDTO } from "../DTO/LoginDTO";
+import LoginUser from "../UseCase/LoginUser";
+import ExceptionNotFound from "../Utils/ExceptionNotFound";
 
 export default class AuthController {
-    static async index(
-        req: FastifyRequest,
-        reply: FastifyReply,
-    ) {
-        const userRepository = new UserRepository(Database);
-        const users = await userRepository.findAll();
-
-        return reply.send(users)
-    }
-    
-    static async store(
+    static async register(
         req: FastifyRequest,
         reply: FastifyReply,
     ) {
@@ -66,36 +59,44 @@ export default class AuthController {
         }
     }
 
-    static async show(
-        req: FastifyRequest<{Params: {id: number}}>,
+    static async login(
+        req: FastifyRequest,
         reply: FastifyReply,
     ) {
-        const {id} = req.params;
+        try {
+            const userData = plainToInstance(LoginDTO, req.body);
+            const validationsErr = await validate(userData);
+            const err = FormExceptions(validationsErr);
+            
+            if(err) {
+                return reply.code(400).send({ err });
+            }
 
-        const userRepo = new UserRepository(Database);
-        const user = await userRepo.findById(id);
+            const repo = new UserRepository(Database);
+            const loginService = new LoginUser(repo)
 
-        return reply.send(UserResponse.toJson(user));
-    }
+            const generatedToken = await loginService.execute(userData);
+            
+            return reply.code(200).send({
+                token: generatedToken
+            });
+            
+        } catch (error) {
+            if(error instanceof ExceptionValidation) {
+                return reply.code(400).send({
+                    error: error.message
+                });
+            }
+            
+            if(error instanceof ExceptionNotFound) {
+                return reply.code(404).send({
+                    error: error.message
+                });
+            }
+            
 
-    static async delete(
-        req: FastifyRequest<{Params: {id: number}}>,
-        reply: FastifyReply,
-    ) {
-        const {id} = req.params;
-
-        const userRepo = new UserRepository(Database)
-        const user = await userRepo.findById(id)
-
-        if(!user) {
-            return reply.code(404).send({
-                error: 'user not found'
-            })
+            return reply.code(500).send(error);
         }
-
-        await userRepo.remove(id)
-
-        return reply.code(204).send();
     }
     
 }
