@@ -95,6 +95,21 @@ export default class UserRepository implements IUserRepository {
             throw error;
         }
     }
+
+    async findByCpfOrCnpjUser(cpfOrCnpjUser: string): Promise<User> {
+        const query = `
+            SELECT *
+            FROM users
+            WHERE CpfOrCnpjUser = ?
+        `;
+        try {
+            const [rows] = await this.db.query(query, [cpfOrCnpjUser]);
+            const users = rows as User[];
+            return users[0];
+        } catch (error) {
+            throw error;
+        }
+    }
     
     async findById(id: number): Promise<User> {
         const query = `

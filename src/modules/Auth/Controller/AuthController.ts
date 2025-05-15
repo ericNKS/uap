@@ -6,6 +6,10 @@ import CreateUserPaciente from "../UseCase/CreateUser";
 import UserRepository from "../Repository/UserRepository";
 import { Database } from "../../../config/database/Database";
 import FormExceptions from "../../../utils/FormExceptions";
+import User from "../Entities/User";
+import JwtToken from "../UseCase/JwtToken";
+import ExceptionValidation from "../Utils/ExceptionValidation";
+import UserResponse from "../DTO/UserResponse";
 
 export default class AuthController {
     static async index(
@@ -17,6 +21,7 @@ export default class AuthController {
 
         return reply.send(users)
     }
+    
     static async store(
         req: FastifyRequest,
         reply: FastifyReply,
@@ -34,13 +39,29 @@ export default class AuthController {
             
             const createUserService = new CreateUserPaciente(userRepository);
             
-            const user = await createUserService.paciente(userData);
+            let user: User;
+            switch (userData.userType) {
+                case 'especialista':
+                    user = await createUserService.especialista(userData);
+                    break;
+                default:
+                    user = await createUserService.paciente(userData);
+                    break;
+            }
+
+            const generatedToken = JwtToken.generate(UserResponse.toJson(user))
             
             return reply.code(201).send({
-                success: user,
-                mudou: true
+                token: generatedToken
             });
+            
         } catch (error) {
+            if(error instanceof ExceptionValidation) {
+                return reply.code(400).send({
+                    error: error.message
+                });
+            }
+
             return reply.code(500).send({error});
         }
     }
@@ -54,7 +75,7 @@ export default class AuthController {
         const userRepo = new UserRepository(Database);
         const user = await userRepo.findById(id);
 
-        return reply.send(user);
+        return reply.send(UserResponse.toJson(user));
     }
 
     static async delete(
