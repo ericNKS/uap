@@ -1,12 +1,11 @@
 import 'reflect-metadata';
 import fastify from "fastify";
-import { ApiControllers } from "./routes/Api";
+import { PrivateRoute, AdminRoute, PublicRoute } from "./routes/Api";
 
 const app = fastify({
     logger: true
 })
 
-// Add a body parser for JSON content-type
 app.addContentTypeParser('application/json', { parseAs: 'string' }, function (_, body, done) {
     try {
         const json = JSON.parse(body as string)
@@ -17,13 +16,15 @@ app.addContentTypeParser('application/json', { parseAs: 'string' }, function (_,
     }
 })
 
-app.register(ApiControllers)
+app.register(PrivateRoute);
+app.register(AdminRoute);
+app.register(PublicRoute);
 
 const start = async () => {
     try {
         await app.listen({ 
             port: 3000,
-            host: '0.0.0.0' // Listen on all available network interfaces
+            host: '0.0.0.0'
         })
     } catch (err) {
         app.log.error(err)

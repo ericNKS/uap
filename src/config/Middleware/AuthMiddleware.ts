@@ -1,0 +1,64 @@
+import { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from "fastify";
+import JwtToken from "../../modules/Auth/UseCase/JwtToken";
+
+export default class AuthMiddleware {
+    private rule: Array<string> = ['RULE_PACIENTE'];
+    constructor(
+        rule?: Array<string>
+    ){
+        if(!rule) return;
+
+        this.rule = rule
+    }
+
+    public authenticate(
+        req: FastifyRequest,
+        reply: FastifyReply,
+        next: HookHandlerDoneFunction
+    ){
+        try {
+            const token = req.headers.authorization?.split(' ')[1];
+
+            if(!token) {
+                return reply.code(403).send({
+                    error: 'Forbidden'
+                });
+            }
+            
+            const payload = JwtToken.decode(token);
+            
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (payload.exp && payload.exp < currentTime) {
+                return reply.code(401).send({ error: 'Token expirado' });
+            }
+
+            if(payload.stsativouser === 'n') {
+                return reply.code(401).send({ error: 'Usuario desativado' });
+            }
+
+            const userRule = payload.rulesuser
+            if (!userRule) {
+                return reply.code(403).send({ error: 'Regra de usuário não encontrada no token' });
+            }
+
+            const userRules = userRule.split(',');
+
+            if(!this.rule) {
+                return next();
+            }
+
+            const autorizado = this.rule.some(e => userRules.includes(e));
+
+            if(!autorizado) {
+                return reply.code(401).send({
+                    error: 'Usuario não autorizado'
+                })
+            }
+
+            next();
+        } catch (error) {
+            console.log(error);
+            return reply.code(401).send({ error: 'Token inválido' });
+        }
+    }
+}
