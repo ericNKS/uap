@@ -19,6 +19,15 @@ services:
     networks:
       - database_network
 
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - database_network
       
   pride-api:
     build: .
@@ -28,12 +37,14 @@ services:
       - "3000:3000"
     depends_on:
       - database
+      - redis
     command: npm run dev
     networks:
       - database_network
 
 volumes:
   database_data:
+  redis-data:
 
 networks:
   database_network:
