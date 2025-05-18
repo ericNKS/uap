@@ -134,7 +134,24 @@ export default class UserRepository implements IUserRepository {
         }
     }
     
-    async remove(id: number): Promise<void> {}
+    async remove(user: User): Promise<void> {
+        let connection;
+        const query = `
+            CALL spExcluirUsuarios(?)
+        `;
+
+        try {
+            connection = await this.db.getConnection();
+
+            await connection.execute(query, [
+                user.idUser,
+            ]);
+        } catch (error) {
+            throw error
+        } finally {
+            if(connection) connection.release()
+        }
+    }
     
     async findAll(): Promise<Array<User>> {
         const query = `

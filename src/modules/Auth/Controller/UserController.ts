@@ -41,6 +41,40 @@ export default class UserController {
         return reply.send(user);
     }
 
+    static async deleteSelf(
+        req: FastifyRequest,
+        reply: FastifyReply,
+    ) {
+        const token = req.headers.authorization?.split(' ')[1];
+
+        if(!token) {
+            return reply.code(404).send({
+                error: 'user not exists'
+            });
+        }
+
+        const userToken = JwtToken.decode(token)
+
+        if(!userToken.idUser) {
+            return reply.code(404).send({
+                error: 'user not exists'
+            });
+        }
+
+        const userRepo = new UserRepository(Database);
+        const user = await userRepo.findById(userToken.idUser);
+
+        if(!user || !user.idUser) {
+            return reply.code(404).send({
+                error: 'user not found'
+            });
+        }
+
+        await userRepo.remove(user.idUser);
+
+        return reply.code(204).send();
+    }
+
     static async delete(
         req: FastifyRequest<{Params: {id: number}}>,
         reply: FastifyReply,

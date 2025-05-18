@@ -18,7 +18,7 @@ export const PublicRoute = (app: FastifyInstance) => {
 
 export const PrivateRoute = (app: FastifyInstance) => {
     app.get('/api/user', handleRule(), UserController.show.bind(AuthController));
-    app.delete('/api/users/:id', handleRule(), UserController.delete.bind(AuthController));
+    app.delete('/api/users/:id', handleRule(), UserController.deleteSelf.bind(AuthController));
 }
 
 export const AdminRoute = (app: FastifyInstance) => {
