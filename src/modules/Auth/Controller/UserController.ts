@@ -1,8 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import UserRepository from "../Repository/UserRepository";
 import { Database } from "../../../config/database/Database";
-import UserResponse from "../DTO/UserResponse";
 import JwtToken from "../UseCase/JwtToken";
+import DeleteUser from "../UseCase/DeleteUser";
+import ExceptionNotFound from "../Utils/ExceptionNotFound";
 
 export default class UserController {
     static async index(
@@ -62,17 +63,18 @@ export default class UserController {
         }
 
         const userRepo = new UserRepository(Database);
-        const user = await userRepo.findById(userToken.idUser);
+        const deleteUserService = new DeleteUser(userRepo);
 
-        if(!user || !user.idUser) {
-            return reply.code(404).send({
-                error: 'user not found'
-            });
+        try {
+            await deleteUserService.execute(userToken.idUser);
+
+            return reply.code(204).send();
+        } catch (error) {
+            if (error instanceof ExceptionNotFound) {
+                return reply.code(404).send(error);
+            }
+            return reply.code(500).send(error);
         }
-
-        await userRepo.remove(user.idUser);
-
-        return reply.code(204).send();
     }
 
     static async delete(
@@ -82,17 +84,18 @@ export default class UserController {
         const {id} = req.params;
 
         const userRepo = new UserRepository(Database)
-        const user = await userRepo.findById(id)
+        const deleteUserService = new DeleteUser(userRepo);
 
-        if(!user) {
-            return reply.code(404).send({
-                error: 'user not found'
-            })
+        try {
+            await deleteUserService.execute(id);
+
+            return reply.code(204).send();
+        } catch (error) {
+            if (error instanceof ExceptionNotFound) {
+                return reply.code(404).send(error);
+            }
+            return reply.code(500).send(error);
         }
-
-        await userRepo.remove(id)
-
-        return reply.code(204).send();
     }
 
 }
