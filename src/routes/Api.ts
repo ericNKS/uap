@@ -4,10 +4,10 @@ import UserController from "../modules/Auth/Controller/UserController";
 import AuthMiddleware from "../config/Middleware/AuthMiddleware";
 
 const handleRule = (rules?: Array<string>): Record<string, any> => {
-    let middleware = new AuthMiddleware(rules);
-
+    let middleware = new AuthMiddleware(rules || []);
+    
     return {
-        preHandler: middleware.authenticate
+        preHandler: middleware.authenticate.bind(middleware)
     };
 }
 
