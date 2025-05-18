@@ -17,6 +17,7 @@ export const PublicRoute = (app: FastifyInstance) => {
 }
 
 export const PrivateRoute = (app: FastifyInstance) => {
+    app.post('/api/logout', AuthController.logout.bind(AuthController));
     app.get('/api/user', handleRule(), UserController.show.bind(AuthController));
     app.delete('/api/users', handleRule(), UserController.deleteSelf.bind(AuthController));
 }

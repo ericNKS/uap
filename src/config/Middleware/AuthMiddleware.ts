@@ -20,14 +20,14 @@ export default class AuthMiddleware {
             const token = req.headers.authorization?.split(' ')[1];
 
             if(!token) {
-                return reply.code(403).send({
-                    error: 'Forbidden'
+                return reply.code(401).send({
+                    error: 'Usuario desconectado'
                 });
             }
             
             const payload = JwtToken.decode(token);
 
-            if(payload.stsativouser !== 's') return reply.code(401).send({ error: 'Usuario desativado' });
+            if(payload.stsativouser !== 's') return reply.code(403).send({ error: 'Usuario desativado' });
             
             const currentTime = Math.floor(Date.now() / 1000);
             if (payload.exp && payload.exp < currentTime) {

@@ -98,5 +98,18 @@ export default class AuthController {
             return reply.code(500).send(error);
         }
     }
+
+    static async logout(
+        req: FastifyRequest,
+        reply: FastifyReply,
+    ) {
+        const headers = req.headers.authorization?.split(' ')[1];
+        if(!headers) reply.code(401).send();
+        try {
+            
+        } catch (error) {
+            return reply.code(500).send(error);
+        }
+    }
     
 }
