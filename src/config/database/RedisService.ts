@@ -7,7 +7,7 @@ export default class RedisService {
     constructor(
         url?: string
     ) {
-        url = url || process.env.REDIS_HOST || 'redis://localhost:6379'
+        url = url || process.env.REDIS_HOST || 'redis://localhost:6379';
 
         this.client = createClient({url});
 
@@ -23,17 +23,18 @@ export default class RedisService {
     }
 
     private async connect(): Promise<void> {
-        if (!this.isConnected) {
-            return;
-        }
-        await this.client.connect();
-    }
-
-    private async disconnect(): Promise<void> {
         if (this.isConnected) {
             return;
         }
-        await this.client.disconnect();
+        await this.client.connect();
+        this.isConnected = true;
+    }
+
+    private async disconnect(): Promise<void> {
+        if (!this.isConnected) {
+            return;
+        }
+        await this.client.close();
         this.isConnected = false;
     }
 

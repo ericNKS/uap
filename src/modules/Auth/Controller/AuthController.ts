@@ -13,6 +13,8 @@ import UserResponse from "../DTO/UserResponse";
 import { LoginDTO } from "../DTO/LoginDTO";
 import LoginUser from "../UseCase/LoginUser";
 import ExceptionNotFound from "../Utils/ExceptionNotFound";
+import RevokeToken from "../UseCase/RevokeToken";
+import RedisService from "../../../config/database/RedisService";
 
 export default class AuthController {
     static async register(
@@ -103,10 +105,16 @@ export default class AuthController {
         req: FastifyRequest,
         reply: FastifyReply,
     ) {
-        const headers = req.headers.authorization?.split(' ')[1];
-        if(!headers) reply.code(401).send();
+        const token = req.headers.authorization?.split(' ')[1];
+        if(!token) return reply.code(401).send({
+            error: 'Usuario não esta autenticado'
+        });
+        const redis = new RedisService();
+        const revokeToken = new RevokeToken(redis)
+        
         try {
-            
+            await revokeToken.execute(token)
+            return reply.code(204).send();
         } catch (error) {
             return reply.code(500).send(error);
         }

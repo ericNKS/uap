@@ -1,5 +1,13 @@
 import { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from "fastify";
 import JwtToken from "../../modules/Auth/UseCase/JwtToken";
+import RedisService from "../database/RedisService";
+
+declare module 'fastify' {
+    interface FastifyRequest {
+        token: string,
+        user?: any,
+    }
+  }
 
 export default class AuthMiddleware {
     private rules: Array<string> = ['RULE_PACIENTE'];
@@ -11,7 +19,7 @@ export default class AuthMiddleware {
         };
     }
 
-    public authenticate(
+    public async authenticate(
         req: FastifyRequest,
         reply: FastifyReply,
         next: HookHandlerDoneFunction
@@ -23,6 +31,14 @@ export default class AuthMiddleware {
                 return reply.code(401).send({
                     error: 'Usuario desconectado'
                 });
+            }
+
+            const redis = new RedisService();
+
+            const isRevoked = await redis.get(`token:blacklist:${token}`);
+
+            if(isRevoked) {
+                return reply.code(401).send({ error: 'Token expirado' });
             }
             
             const payload = JwtToken.decode(token);
@@ -41,6 +57,8 @@ export default class AuthMiddleware {
 
             const userRules = userRule.split(',');
             if(!this.rules) {
+                req.user = payload;
+                req.token = token
                 return next();
             }
 
@@ -53,6 +71,8 @@ export default class AuthMiddleware {
                 })
             }
 
+            req.user = payload;
+            req.token = token
             next();
         } catch (error) {
             console.log(error);
