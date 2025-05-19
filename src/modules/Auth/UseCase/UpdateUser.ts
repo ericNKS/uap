@@ -1,6 +1,7 @@
 import UpdateUserDTO from "../DTO/UpdateUserDTO";
 import User from "../Entities/User";
 import IUserRepository from "../Interfaces/IUserRepository";
+import bcrypt from "bcryptjs"
 
 export default class UpdateUser {
     constructor(
@@ -9,7 +10,7 @@ export default class UpdateUser {
 
     public async execute(idUser: number, userToUpdate: UpdateUserDTO): Promise<User> {
         let user = await this.userRepository.findByIdWithPassword(idUser);
-        user = this.validatePassword(user, userToUpdate) ?? user;
+        user = await this.validatePassword(user, userToUpdate) ?? user;
 
         user.nomeuser = userToUpdate.nomeuser ?? user.nomeuser;
 
@@ -24,12 +25,13 @@ export default class UpdateUser {
         return await this.userRepository.update(user);
     }
 
-    private validatePassword(user: User, newUser: UpdateUserDTO): User | null {
+    private async validatePassword(user: User, newUser: UpdateUserDTO): Promise<User | null> {
         if(!newUser.senhaUser) return null;
 
         if(newUser.senhaUser.first !== newUser.senhaUser.second) throw new Error('A senha esta diferente');
 
-        if(user.senhauser != newUser.senhaUser.first) throw new Error('Senha antiga invalida');
+        const isValidPassword = await bcrypt.compare(newUser.senhaUser.old, user.senhauser);
+        if(!isValidPassword) throw new Error('Senha antiga invalida');
 
         user.senhauser = newUser.senhaUser.first;
         return user;
