@@ -4,6 +4,8 @@ import { Database } from "../../../config/database/Database";
 import JwtToken from "../UseCase/JwtToken";
 import DeleteUser from "../UseCase/DeleteUser";
 import ExceptionNotFound from "../Utils/ExceptionNotFound";
+import UploadImage from "../../File/UseCase/UploadImage";
+import { uploadDir } from "../../../utils/UploadDir";
 
 export default class UserController {
     static async index(
@@ -75,6 +77,25 @@ export default class UserController {
             }
             return reply.code(500).send(error);
         }
+    }
+
+    static async update(
+        req: FastifyRequest,
+        reply: FastifyReply,
+    ) {
+        const image = await req.file();
+    
+        if (!image) {
+            return reply.code(400).send({ error: 'No file uploaded' });
+        }
+
+        const uploadImage = new UploadImage(uploadDir);
+
+        const path = await uploadImage.execute(image);
+        
+        return reply.send({
+            path
+        });
     }
 
     static async delete(

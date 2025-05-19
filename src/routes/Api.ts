@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import AuthController from "../modules/Auth/Controller/AuthController";
 import UserController from "../modules/Auth/Controller/UserController";
 import AuthMiddleware from "../config/Middleware/AuthMiddleware";
+import ImageController from "../modules/File/Controller/ImageController";
 
 const handleRule = (rules?: Array<string>): Record<string, any> => {
     let middleware = new AuthMiddleware(rules || []);
@@ -14,12 +15,15 @@ const handleRule = (rules?: Array<string>): Record<string, any> => {
 export const PublicRoute = (app: FastifyInstance) => {
     app.post('/api/register', AuthController.register.bind(AuthController));
     app.post('/api/login', AuthController.login.bind(AuthController));
+    
+    app.get('/api/image/:filename', ImageController.show.bind(ImageController));
 }
 
 export const PrivateRoute = (app: FastifyInstance) => {
-    app.post('/api/logout', AuthController.logout.bind(AuthController));
+    app.post('/api/logout', handleRule(), AuthController.logout.bind(AuthController));
     app.get('/api/user', handleRule(), UserController.show.bind(AuthController));
     app.delete('/api/users', handleRule(), UserController.deleteSelf.bind(AuthController));
+    app.patch('/api/users', handleRule(), UserController.update.bind(AuthController));
 }
 
 export const AdminRoute = (app: FastifyInstance) => {

@@ -56,7 +56,7 @@ export default class AuthMiddleware {
             }
 
             const userRules = userRule.split(',');
-            if(!this.rules) {
+            if(!this.rules || this.rules.length < 1) {
                 req.user = payload;
                 req.token = token
                 return next();
