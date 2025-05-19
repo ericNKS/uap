@@ -18,6 +18,7 @@ describe('Testando criação do paciente', () => {
             findByEmail: jest.fn(),
             findByCpfOrCnpjUser: jest.fn(),
             findById: jest.fn(),
+            findByIdWithPassword: jest.fn(),
             remove: jest.fn(),
         };
 

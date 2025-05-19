@@ -159,9 +159,9 @@ export default class UserRepository implements IUserRepository {
     async findByEmail(email: string): Promise<User> {
         const query = `
             SELECT
-                IdUser as idUser, NomeUser as nomeuser, 
-                EmailUser as emailuser, TelUser as teluser,
-                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
+                IdUser as idUser,
+                NomeUser as nomeuser,
+                SenhaUser as senhauser, EmailUser as emailuser,
                 ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
             FROM users
             WHERE emailuser = ?
@@ -194,6 +194,25 @@ export default class UserRepository implements IUserRepository {
         const query = `
             SELECT
                 IdUser as idUser, NomeUser as nomeuser, 
+                EmailUser as emailuser, TelUser as teluser,
+                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
+                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
+            FROM users
+            WHERE idUser = ?
+        `;
+        try {
+            const [rows] = await this.db.query(query, [id]);
+            const users = rows as User[];
+            return users[0];
+        } catch (error) {
+            throw error;
+        }
+    }
+    
+    async findByIdWithPassword(id: number): Promise<User> {
+        const query = `
+            SELECT
+                IdUser as idUser, NomeUser as nomeuser, SenhaUser as senhauser,
                 EmailUser as emailuser, TelUser as teluser,
                 CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
                 ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser

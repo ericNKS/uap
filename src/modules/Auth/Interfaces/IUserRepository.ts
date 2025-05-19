@@ -7,5 +7,6 @@ export default interface IUserRepository {
     findByEmail: (email: string) => Promise<User>,
     findByCpfOrCnpjUser: (cpfOrCnpjUser: string) => Promise<User>,
     findById: (id: number) => Promise<User>,
+    findByIdWithPassword: (id: number) => Promise<User>,
     remove: (user: User) => Promise<void>,
 }

@@ -27,7 +27,6 @@ export default class LoginUser {
         
         const isPasswordValid = await bcrypt.compare(form.senhaUser, userToValidate.senhauser)
 
-        console.log(isPasswordValid);
         if(!isPasswordValid) {
             throw new ExceptionValidation("Senha inválida")
         }

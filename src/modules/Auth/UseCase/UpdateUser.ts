@@ -8,7 +8,7 @@ export default class UpdateUser {
     ) {}
 
     public async execute(idUser: number, userToUpdate: UpdateUserDTO): Promise<User> {
-        let user = await this.userRepository.findById(idUser);
+        let user = await this.userRepository.findByIdWithPassword(idUser);
         user = this.validatePassword(user, userToUpdate) ?? user;
 
         user.nomeuser = userToUpdate.nomeuser ?? user.nomeuser;

@@ -13,6 +13,7 @@ describe('Removendo usuario', () => {
             findByEmail: jest.fn(),
             findByCpfOrCnpjUser: jest.fn(),
             findById: jest.fn(),
+            findByIdWithPassword: jest.fn(),
             remove: jest.fn(),
         };
     });
