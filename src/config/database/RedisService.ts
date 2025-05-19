@@ -12,13 +12,11 @@ export default class RedisService {
         this.client = createClient({url});
 
         this.client.on('error', (err: Error) => {
-            console.error('Redis Client Error:', err);
             this.isConnected = false;
           });
           
           this.client.on('connect', () => {
             this.isConnected = true;
-            console.log('Redis client connected');
           });
     }
 

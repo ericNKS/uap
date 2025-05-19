@@ -79,13 +79,88 @@ export default class UserRepository implements IUserRepository {
         }
     }
     
-    async update(): Promise<User> {return new User()}
+    async update(user: User): Promise<User> {
+        const updateWithouPasswordQuery = `
+            UPDATE
+                users u
+            SET
+                u.NomeUser = ?,
+                u.EmailUser = ?,
+                u.TelUser = ?,
+                u.GenUser = ?,
+                u.ImgUrlUser = ?,
+                u.StsAtivoUser = ?
+            WHERE
+                u.IdUser = ?;
+        `;
+        const updateWithPasswordQuery = `
+            UPDATE
+                users u
+            SET
+                u.SenhaUser = ?,
+                u.NomeUser = ?,
+                u.EmailUser = ?,
+                u.TelUser = ?,
+                u.GenUser = ?,
+                u.ImgUrlUser = ?,
+                u.StsAtivoUser = ?
+            WHERE
+                u.IdUser = ?;
+        `;
+
+        const selectQuery = `
+            SELECT
+                IdUser as idUser, NomeUser as nomeuser, 
+                EmailUser as emailuser, TelUser as teluser,
+                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
+                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
+            FROM users
+            WHERE IdUser = ?
+        `;
+
+        try {
+            console.log('user.idUser', user.senhauser);
+            let updateQuery = updateWithouPasswordQuery;
+            let values = [
+                user.nomeuser,
+                user.emailuser,
+                user.teluser,
+                user.genuser,
+                user.imgurluser,
+                user.stsativouser,
+                user.idUser
+            ];
+
+            if(user.senhauser){
+                updateQuery = updateWithPasswordQuery;
+                values = [
+                    user.senhauser,
+                    user.nomeuser,
+                    user.emailuser,
+                    user.teluser,
+                    user.genuser,
+                    user.imgurluser,
+                    user.stsativouser,
+                    user.idUser
+                ];    
+            }
+
+            await this.db.query(updateQuery, values);
+
+            const [rows] = await this.db.query(selectQuery, [user.idUser]);
+            const users = rows as User[];
+            return users[0];
+
+        } catch (error) {
+            throw error;
+        }
+    }
     
     async findByEmail(email: string): Promise<User> {
         const query = `
             SELECT
                 IdUser as idUser, NomeUser as nomeuser, 
-                EmailUser as emailuser, SenhaUser as senhauser, TelUser as teluser,
+                EmailUser as emailuser, TelUser as teluser,
                 CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
                 ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
             FROM users
