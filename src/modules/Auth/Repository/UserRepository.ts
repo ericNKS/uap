@@ -9,7 +9,7 @@ export default class UserRepository implements IUserRepository {
     
     async createPaciente(user: User): Promise<User> {
         let connection;
-        const query = `CALL spregistrarpaciente(?,?,?,?,?,?)`;
+        const query = `CALL spregistrarpaciente(?,?,?,?,?,?,?)`;
     
         try {
             connection = await this.db.getConnection();
@@ -21,6 +21,7 @@ export default class UserRepository implements IUserRepository {
                 user.teluser,
                 user.cpforcnpjuser,
                 user.genuser,
+                'pronome'
             ]);
             
             const [newUsers] = await connection.execute<mysql.RowDataPacket[]>(

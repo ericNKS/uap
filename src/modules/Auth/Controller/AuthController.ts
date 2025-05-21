@@ -16,6 +16,7 @@ import ExceptionNotFound from "../Utils/ExceptionNotFound";
 import RevokeToken from "../UseCase/RevokeToken";
 import RedisService from "../../../config/database/RedisService";
 import GenerateAccountActivationToken from "../UseCase/GenerateAccountActivationToken";
+import ActiveAccount from "../UseCase/ActiveAccount";
 
 export default class AuthController {
     static async register(
@@ -128,9 +129,27 @@ export default class AuthController {
         req: FastifyRequest<{Params: {token: string}}>,
         reply: FastifyReply
     ) {
-        const token = req.params.token;
+        const emailToken = req.params.token;
+        const redisName = `user:tokenActivation:${emailToken}`;
+        const redis = RedisService.getInstance();
+
+        const userToken = await redis.get(redisName);
+
+        if(!userToken) {
+            return reply.code(404).send({
+                error: 'Token invalid'
+            });
+        }
+
+        const repository = new UserRepository(Database);
+        const activeAccountService = new ActiveAccount(repository);
         
-        return {token: token};
+        const idUser = JSON.parse(userToken).idUser;
+        await activeAccountService.execute(idUser);
+
+        redis.remove(redisName);
+
+        return reply.code(204).send();
     }
     
 }

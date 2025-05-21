@@ -61,4 +61,12 @@ export default class RedisService {
             await this.client.set(key, value);
         }
     }
+
+    public async remove(key: string): Promise<number> {
+        if (!this.isConnected) {
+            await this.connect();
+        }
+        
+        return await this.client.del(key);
+    }
 }

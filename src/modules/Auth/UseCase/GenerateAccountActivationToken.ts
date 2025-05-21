@@ -92,12 +92,12 @@ export default class GenerateAccountActivationToken {
       <p>Para começar a aproveitar todos os recursos da nossa plataforma, clique no botão abaixo para ativar sua conta:</p>
 
       <p style="text-align: center;">
-        <a href="http://localhost:3000/ativar?token=${userToken}" class="button">👉 Ativar minha conta 👈</a>
+        <a href="http://localhost:3000/ativar/${userToken}" class="button">👉 Ativar minha conta 👈</a>
       </p>
 
       <p>Se o botão acima não funcionar, copie e cole o link abaixo no seu navegador:</p>
 
-      <p><a href="http://localhost:3000/ativar?token=${userToken}">http://localhost:3000/ativar?token=${userToken}</a></p>
+      <p><a href="http://localhost:3000/ativar/${userToken}">http://localhost:3000/ativar/${userToken}</a></p>
 
       <p>Este link é válido por 24 horas. Caso não tenha solicitado este cadastro, por favor, ignore esta mensagem.</p>
 

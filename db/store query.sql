@@ -23,7 +23,7 @@ StsAtivoUser CHAR(1) NOT NULL
 
 
 CREATE TABLE if NOT EXISTS consultas(
-IdConsulta BIGINT AUTO_INCREME																																														NT PRIMARY KEY,
+IdConsulta BIGINT AUTO_INCREMENT PRIMARY KEY,
 IdPaciente BIGINT,
 IdEspecialista BIGINT,
 DtConsulta DATE NOT NULL,
@@ -88,7 +88,7 @@ BEGIN
 	
 	if vIdUser = 0 then
 		INSERT INTO users (NomeUser, EmailUser, SenhaUser, TelUser, CpfOrCnpjUser, GenUser, PronomeUser, StsAtivoUser)
-		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pGenUser, pPronomeUser, 's');
+		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pGenUser, pPronomeUser, 'n');
 	END if;
 END
 $$
@@ -115,7 +115,7 @@ BEGIN
 	
 	if viduser = 0 then
 		INSERT INTO users (NomeUser, EmailUser, SenhaUser, TelUser, CpfOrCnpjUser, CrpUser, GenUser, PronomeUser, RulesUser, StsAtivoUser)
-		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pCrpUser, pGenUser, pPronomeUser, 'RULE_ESPECIALISTA_PENDENTE', 's');
+		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pCrpUser, pGenUser, pPronomeUser, 'RULE_ESPECIALISTA_PENDENTE', 'n');
 	END if;
 END
 $$
