@@ -33,13 +33,19 @@ services:
     image: rabbitmq:3.8-management
     container_name: 'rabbitmq'
     ports:
-        - 5672:5672
-        - 15672:15672
+      - 5672:5672
+      - 15672:15672
     volumes:
-        - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-        - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+      - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq-log:/var/log/rabbitmq
     networks:
-        - database_network
+      - database_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
       
   pride-api:
     build: .
@@ -50,13 +56,37 @@ services:
     depends_on:
       - database
       - redis
+      - api-send-mail
     command: npm run dev
     networks:
       - database_network
 
+  api-send-mail:
+    build: ../MailGo
+    ports:
+      - "3030:3000"
+    command: /app/api
+    networks:
+      - database_network
+    depends_on:
+      - service-send-mail
+
+  service-send-mail:
+    build: ../MailGo
+    command: /app/queue
+    networks:
+      - database_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+
+
 volumes:
   database_data:
   redis-data:
+  rabbitmq-data:
+  rabbitmq-log:
 
 networks:
   database_network:

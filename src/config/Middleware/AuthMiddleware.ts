@@ -26,7 +26,7 @@ export default class AuthMiddleware {
                 return reply.code(401).send({ error: 'Usuario desconectado' });
             }
 
-            const redis = new RedisService();
+            const redis = RedisService.getInstance();
             const isRevoked = await redis.get(`token:blacklist:${token}`);
 
             if (isRevoked) {

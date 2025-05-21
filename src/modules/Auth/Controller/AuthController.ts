@@ -15,6 +15,7 @@ import LoginUser from "../UseCase/LoginUser";
 import ExceptionNotFound from "../Utils/ExceptionNotFound";
 import RevokeToken from "../UseCase/RevokeToken";
 import RedisService from "../../../config/database/RedisService";
+import GenerateAccountActivationToken from "../UseCase/GenerateAccountActivationToken";
 
 export default class AuthController {
     static async register(
@@ -44,10 +45,12 @@ export default class AuthController {
                     break;
             }
 
-            const generatedToken = JwtToken.generate(UserResponse.toJson(user))
+            const generateAccountActivationToken = new GenerateAccountActivationToken(RedisService.getInstance());
+            await generateAccountActivationToken.execute(user);
+
             
             return reply.code(201).send({
-                token: generatedToken
+                success: 'Foi enviado um email para verificar a conta'
             });
             
         } catch (error) {
@@ -109,7 +112,7 @@ export default class AuthController {
         if(!token) return reply.code(401).send({
             error: 'Usuario não esta autenticado'
         });
-        const redis = new RedisService();
+        const redis = RedisService.getInstance();
         const revokeToken = new RevokeToken(redis)
         
         try {
@@ -118,6 +121,16 @@ export default class AuthController {
         } catch (error) {
             return reply.code(500).send(error);
         }
+    }
+
+
+    static async verifyEmail(
+        req: FastifyRequest<{Params: {token: string}}>,
+        reply: FastifyReply
+    ) {
+        const token = req.params.token;
+        
+        return {token: token};
     }
     
 }
