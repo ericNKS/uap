@@ -40,5 +40,5 @@ export default class UpdateUser {
         if(!isValidPassword) return new Error('Senha antiga invalida');
 
         return null;
-        }
+    }
 }
