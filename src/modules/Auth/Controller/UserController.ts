@@ -85,83 +85,46 @@ export default class UserController {
         }
     }
 
-    static async update(
-        req: FastifyRequest,
-        reply: FastifyReply,
-    ) {
+    static async update(req: FastifyRequest, reply: FastifyReply) {
         try {
-            const token = req.headers.authorization?.split(' ')[1];
+            const headersUser = req.user;
     
-            if(!token) {
-                return reply.code(401).send({
-                    error: 'Authentication required'
-                });
-            }
-    
-            const userToken = JwtToken.decode(token);
-            
-            // Check if we have a valid user ID from the token
-            if (!userToken || !userToken.idUser) {
-                return reply.code(401).send({
-                    error: 'Invalid authentication token'
-                });
-            }
-    
-            // Handle multipart form data
             let userData: UpdateUserDTO;
-            
-            // Check if the request is multipart
             const contentType = req.headers['content-type'] || '';
+    
             if (contentType.includes('multipart/form-data')) {
-                // For multipart requests, we need to parse the form fields manually
                 const formData: any = {};
-                
-                // Parse form fields from the request
                 const parts = req.parts();
-                
+    
                 for await (const part of parts) {
                     if (part.type === 'file' && part.fieldname === 'imgurluser') {
-                        // Handle file upload
                         const uploadImage = new UploadImage(uploadDir);
                         formData.imgurluser = await uploadImage.execute(part);
                     } else if (part.type === 'field') {
-                        // Handle regular form fields
                         formData[part.fieldname] = part.value;
                     }
                 }
-                
-                // Convert form data to DTO
+    
                 userData = plainToInstance(UpdateUserDTO, formData);
             } else {
-                // For JSON requests
                 userData = plainToInstance(UpdateUserDTO, req.body);
             }
-            
-            // Ensure userData is not undefined before validation
+    
             if (!userData) {
-                return reply.code(400).send({
-                    error: 'No update data provided'
-                });
+                return reply.code(400).send({ error: 'No update data provided' });
             }
-            
-            // Validate the data
+    
             const validationsErr = await validate(userData);
             const err = FormExceptions(validationsErr);
-            
-            if(err) {
+            if (err) {
                 return reply.code(400).send({ err });
             }
-            
-            // Update the user
+    
             const userRepository = new UserRepository(Database);
             const updateUserService = new UpdateUser(userRepository);
+            const user = await updateUserService.execute(headersUser.idUser, userData);
     
-            const user = await updateUserService.execute(userToken.idUser, userData);
-            
-            return reply.send({
-                success: true,
-                user
-            });
+            return reply.send(user);
         } catch (error) {
             req.log.error(error);
             return reply.code(500).send({

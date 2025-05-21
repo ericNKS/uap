@@ -119,7 +119,6 @@ export default class UserRepository implements IUserRepository {
         `;
 
         try {
-            console.log('user.idUser', user.senhauser);
             let updateQuery = updateWithouPasswordQuery;
             let values = [
                 user.nomeuser,

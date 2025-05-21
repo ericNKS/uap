@@ -11,71 +11,56 @@ declare module 'fastify' {
 
 export default class AuthMiddleware {
     private rules: Array<string> = ['RULE_PACIENTE'];
-    constructor(
-        rule: Array<string>
-    ){
-        if(rule) {
-            this.rules = rule
-        };
+
+    constructor(rule: Array<string>) {
+        if (rule) {
+            this.rules = rule;
+        }
     }
 
-    public async authenticate(
-        req: FastifyRequest,
-        reply: FastifyReply,
-        next: HookHandlerDoneFunction
-    ){
+    public async authenticate(req: FastifyRequest, reply: FastifyReply) {
         try {
             const token = req.headers.authorization?.split(' ')[1];
 
-            if(!token) {
-                return reply.code(401).send({
-                    error: 'Usuario desconectado'
-                });
+            if (!token) {
+                return reply.code(401).send({ error: 'Usuario desconectado' });
             }
 
             const redis = new RedisService();
-
             const isRevoked = await redis.get(`token:blacklist:${token}`);
 
-            if(isRevoked) {
+            if (isRevoked) {
                 return reply.code(401).send({ error: 'Token expirado' });
             }
-            
+
             const payload = JwtToken.decode(token);
 
-            if(payload.stsativouser !== 's') return reply.code(403).send({ error: 'Usuario desativado' });
-            
+            if (payload.stsativouser !== 's') {
+                return reply.code(403).send({ error: 'Usuario desativado' });
+            }
+
             const currentTime = Math.floor(Date.now() / 1000);
             if (payload.exp && payload.exp < currentTime) {
                 return reply.code(401).send({ error: 'Token expirado' });
             }
 
-            const userRule = payload.rulesuser
+            const userRule = payload.rulesuser;
             if (!userRule) {
                 return reply.code(403).send({ error: 'Regra de usuário não encontrada no token' });
             }
 
             const userRules = userRule.split(',');
-            if(!this.rules || this.rules.length < 1) {
-                req.user = payload;
-                req.token = token
-                return next();
-            }
-
-            const autorizado = this.rules.some(e => userRules.includes(e));
-
-
-            if(!autorizado) {
-                return reply.code(401).send({
-                    error: 'Usuario não autorizado'
-                })
+            if (this.rules && this.rules.length > 0) {
+                const autorizado = this.rules.some(e => userRules.includes(e));
+                if (!autorizado) {
+                    return reply.code(401).send({ error: 'Usuario não autorizado' });
+                }
             }
 
             req.user = payload;
-            req.token = token
-            next();
+            req.token = token;
         } catch (error) {
-            console.log(error);
+            req.log.error(error);
             return reply.code(401).send({ error: 'Token inválido' });
         }
     }
