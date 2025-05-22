@@ -15,19 +15,19 @@ jobs:
       matrix:
         node-version: [18.x, 20.x, 22.x]
 
+    env: # Define environment variables at the job level
+      EMAIL_FROM: email@email.com
+      EMAIL_HOST: smtp.gmail.com
+      EMAIL_PASSWORD: password # Consider using GitHub Secrets for sensitive data
+      EMAIL_PORT: 587
+      EMAIL_URL_SERVICE: http://localhost:3000/email/campaigns
+
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      env:
-        EMAIL_FROM: email@email.com
-        EMAIL_HOST: smtp.gmail.com
-        EMAIL_PASSWORD: password
-        EMAIL_PORT: 587
-        EMAIL_URL_SERVICE: http://localhost:3000/email/campaigns
-        
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm isntall
+    - run: npm install # Corrected typo
     - run: npm test
