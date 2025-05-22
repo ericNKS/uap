@@ -34,7 +34,6 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - database
       - redis
       - api-send-mail
     command: npm run dev
@@ -59,8 +58,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      database:
-        condition: service_healthy
       api-send-mail:
         condition: service_started 
       pride-api:
@@ -69,7 +66,6 @@ services:
 
 
 volumes:
-  database_data:
   redis-data:
   rabbitmq-data:
   rabbitmq-log:
