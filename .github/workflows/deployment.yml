@@ -19,5 +19,5 @@ jobs:
       - name: Deploy to GCP
         run:  |
           ssh -o StrictHostKeyChecking=no google@35.199.83.112 \
-            "sudo ./uap/docker run -d -p 80:3000 app && sudo docker-compose up redis rabbitmq api-send-mail service-send-mail"
+            "./uap/script/deploy.sh"
     
