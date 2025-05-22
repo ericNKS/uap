@@ -69,7 +69,7 @@ services:
     networks:
       - database_network
     depends_on:
-      - service-send-mail
+      - rabbitmq
 
   service-send-mail:
     build: ../MailGo
@@ -79,6 +79,12 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      database:
+        condition: service_healthy
+      api-send-mail:
+        condition: service_started 
+      pride-api:
+        condition: service_started
 
 
 
