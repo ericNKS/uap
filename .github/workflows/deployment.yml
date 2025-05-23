@@ -19,5 +19,5 @@ jobs:
       - name: Deploy to GCP
         run:  |
           ssh -o StrictHostKeyChecking=no google@35.199.83.112 \
-            "sudo ./uap/script/deploy.sh"
+            "git -C ./Backend/ pull && sudo ./uap/script/deploy.sh"
     
