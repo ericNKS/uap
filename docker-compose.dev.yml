@@ -18,3 +18,9 @@ services:
       - ./db:/docker-entrypoint-initdb.d:ro
     networks:
       - database_network
+
+volumes:
+  database_data:
+
+networks:
+  database_network:
