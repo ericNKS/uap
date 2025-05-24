@@ -1,6 +1,7 @@
 services:
   database:
     image: mysql:8.0
+    command: --log-bin-trust-function-creators=1
     environment:
       MYSQL_DATABASE: ${DB_NAME:-app}
       MYSQL_PASSWORD: ${DB_PASSWORD:-!ChangeMe!}
