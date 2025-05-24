@@ -129,7 +129,7 @@ CREATE PROCEDURE spAtivarEmail(
 BEGIN
 	DECLARE vIdUser BIGINT DEFAULT 0;
 
-SELECT if(COUNT(u.IdUser), <> 1,0, u.IdUser) INTO vIdUser
+SELECT if(COUNT(u.IdUser) <> 1,0, u.IdUser) INTO vIdUser
 FROM users u
 WHERE pIduser = u.IdUser
 GROUP BY(u.IdUser);	
@@ -356,7 +356,7 @@ delimiter $$
 CREATE PROCEDURE spAdicionarExpediente (
 	IN pIdUser BIGINT,
 	IN pDtExpediente DATE,
-	IN pHrExpediente TIME,
+	IN pHrExpediente TIME
 )
 BEGIN
 	DECLARE vIdUser BIGINT DEFAULT 0;
