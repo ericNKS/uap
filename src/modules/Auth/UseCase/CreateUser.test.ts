@@ -1,6 +1,6 @@
 import { CreateUserRequest } from "../DTO/CreateUserRequest"
 import User from "../Entities/User"
-import IRepository from "../Interfaces/IUserRepository"
+import IUserRepository from "../Interfaces/IUserRepository"
 import { RulesEnum } from "../Utils/RulesEnum"
 import CreateUser from "./CreateUser"
 import bcrypt from "bcryptjs"
@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs"
 jest.mock("bcryptjs")
 
 describe('Testando criação do paciente', () => {
-    let userRepository: jest.Mocked<IRepository>;
+    let userRepository: jest.Mocked<IUserRepository>;
 
     beforeAll(() => {
         userRepository = {
@@ -16,7 +16,9 @@ describe('Testando criação do paciente', () => {
             createEspecialista: jest.fn(),
             update: jest.fn(),
             findByEmail: jest.fn(),
+            findByCpfOrCnpjUser: jest.fn(),
             findById: jest.fn(),
+            findByIdWithPassword: jest.fn(),
             remove: jest.fn(),
         };
 

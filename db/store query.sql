@@ -89,7 +89,7 @@ BEGIN
 	
 	if vIdUser = 0 then
 		INSERT INTO users (NomeUser, EmailUser, SenhaUser, TelUser, CpfOrCnpjUser, GenUser, PronomeUser, StsAtivoUser)
-		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pGenUser, pPronomeUser, 's');
+		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pGenUser, pPronomeUser, 'n');
 	END if;
 END
 $$
@@ -116,7 +116,7 @@ BEGIN
 	
 	if viduser = 0 then
 		INSERT INTO users (NomeUser, EmailUser, SenhaUser, TelUser, CpfOrCnpjUser, CrpUser, GenUser, PronomeUser, RulesUser, StsAtivoUser)
-		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pCrpUser, pGenUser, pPronomeUser, 'RULE_ESPECIALISTA_PENDENTE', 's');
+		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pCrpUser, pGenUser, pPronomeUser, 'RULE_ESPECIALISTA_PENDENTE', 'n');
 	END if;
 END
 $$

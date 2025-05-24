@@ -16,7 +16,6 @@ export default class User {
             idUser: this.idUser,
             nomeuser: this.nomeuser,
             emailuser: this.emailuser,
-            senhauser: this.senhauser,
             teluser: this.teluser,
             cpforcnpjuser: this.cpforcnpjuser,
             crpuser: this.crpuser,

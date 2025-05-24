@@ -5,6 +5,8 @@ export default interface IUserRepository {
     createEspecialista: (user: User) => Promise<User>,
     update: (user: User) => Promise<User>,
     findByEmail: (email: string) => Promise<User>,
+    findByCpfOrCnpjUser: (cpfOrCnpjUser: string) => Promise<User>,
     findById: (id: number) => Promise<User>,
-    remove: (id: number) => Promise<void>,
+    findByIdWithPassword: (id: number) => Promise<User>,
+    remove: (user: User) => Promise<void>,
 }

@@ -2,15 +2,20 @@ import {CreateUserRequest} from "../DTO/CreateUserRequest";
 import User from "../Entities/User";
 import IUserRepository from "../Interfaces/IUserRepository";
 import bcrypt from "bcryptjs"
+import ExceptionValidation from "../Utils/ExceptionValidation";
 
 export default class CreateUserPaciente {
     public constructor(
         private userRepository: IUserRepository
     ) {}
 
-    public async paciente(userRequest: CreateUserRequest): Promise<User | void> {
+    public async paciente(userRequest: CreateUserRequest): Promise<User> {
         try {
-            this.validateUser(userRequest)
+            const err = await this.validateUser(userRequest)
+            if(err != null) {
+                throw new ExceptionValidation(err);
+            }
+            
             const hashedPassword = await bcrypt.hash(userRequest.senhaUser.first, 10)
 
             const userToSave: User = {
@@ -30,14 +35,16 @@ export default class CreateUserPaciente {
             
             return user;
         } catch (error) {
-            console.error('Erro durante a criação do usuário:', error);
             throw error;
         }
     }
 
-    public async especialista(userRequest: CreateUserRequest): Promise<User | void> {
+    public async especialista(userRequest: CreateUserRequest): Promise<User> {
         try {
-            this.validateUser(userRequest)
+            const err = await this.validateUser(userRequest)
+            if(err) {
+                throw new Error(err);
+            }
             const hashedPassword = await bcrypt.hash(userRequest.senhaUser.first, 10)
 
             const userToSave: User = {
@@ -57,14 +64,25 @@ export default class CreateUserPaciente {
             
             return user;
         } catch (error) {
-            console.error('Erro durante a criação do usuário:', error);
             throw error;
         }
     }
 
-    private validateUser(user: CreateUserRequest) {
+    private async validateUser(user: CreateUserRequest): Promise<string | null> {
         if(user.senhaUser.first !== user.senhaUser.second) {
-            throw new Error('password validation is invalid')
+            return 'password validation is invalid';
         }
+
+        let hasUser = await this.userRepository.findByEmail(user.emailUser);
+        if(hasUser) {
+            return 'User already exists';
+        }
+
+        hasUser = await this.userRepository.findByCpfOrCnpjUser(user.cpfOrCnpjUser);
+        if(hasUser) {
+            return 'User already exists';
+        }
+
+        return null;
     }
 }

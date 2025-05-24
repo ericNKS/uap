@@ -9,7 +9,7 @@ export default class UserRepository implements IUserRepository {
     
     async createPaciente(user: User): Promise<User> {
         let connection;
-        const query = `CALL spregistrarpaciente(?,?,?,?,?,?)`;
+        const query = `CALL spregistrarpaciente(?,?,?,?,?,?,?)`;
     
         try {
             connection = await this.db.getConnection();
@@ -21,6 +21,7 @@ export default class UserRepository implements IUserRepository {
                 user.teluser,
                 user.cpforcnpjuser,
                 user.genuser,
+                'pronome'
             ]);
             
             const [newUsers] = await connection.execute<mysql.RowDataPacket[]>(
@@ -79,11 +80,89 @@ export default class UserRepository implements IUserRepository {
         }
     }
     
-    async update(): Promise<User> {return new User()}
+    async update(user: User): Promise<User> {
+        const updateWithouPasswordQuery = `
+            UPDATE
+                users u
+            SET
+                u.NomeUser = ?,
+                u.EmailUser = ?,
+                u.TelUser = ?,
+                u.GenUser = ?,
+                u.ImgUrlUser = ?,
+                u.StsAtivoUser = ?
+            WHERE
+                u.IdUser = ?;
+        `;
+        const updateWithPasswordQuery = `
+            UPDATE
+                users u
+            SET
+                u.SenhaUser = ?,
+                u.NomeUser = ?,
+                u.EmailUser = ?,
+                u.TelUser = ?,
+                u.GenUser = ?,
+                u.ImgUrlUser = ?,
+                u.StsAtivoUser = ?
+            WHERE
+                u.IdUser = ?;
+        `;
+
+        const selectQuery = `
+            SELECT
+                IdUser as idUser, NomeUser as nomeuser, 
+                EmailUser as emailuser, TelUser as teluser,
+                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
+                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
+            FROM users
+            WHERE IdUser = ?
+        `;
+
+        try {
+            let updateQuery = updateWithouPasswordQuery;
+            let values = [
+                user.nomeuser,
+                user.emailuser,
+                user.teluser,
+                user.genuser,
+                user.imgurluser,
+                user.stsativouser,
+                user.idUser
+            ];
+
+            if(user.senhauser){
+                updateQuery = updateWithPasswordQuery;
+                values = [
+                    user.senhauser,
+                    user.nomeuser,
+                    user.emailuser,
+                    user.teluser,
+                    user.genuser,
+                    user.imgurluser,
+                    user.stsativouser,
+                    user.idUser
+                ];    
+            }
+
+            await this.db.query(updateQuery, values);
+
+            const [rows] = await this.db.query(selectQuery, [user.idUser]);
+            const users = rows as User[];
+            return users[0];
+
+        } catch (error) {
+            throw error;
+        }
+    }
     
     async findByEmail(email: string): Promise<User> {
         const query = `
-            SELECT *
+            SELECT
+                IdUser as idUser,
+                NomeUser as nomeuser,
+                SenhaUser as senhauser, EmailUser as emailuser,
+                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
             FROM users
             WHERE emailuser = ?
         `;
@@ -95,12 +174,31 @@ export default class UserRepository implements IUserRepository {
             throw error;
         }
     }
-    
-    async findById(id: number): Promise<User> {
+
+    async findByCpfOrCnpjUser(cpfOrCnpjUser: string): Promise<User> {
         const query = `
             SELECT *
             FROM users
-            WHERE id = ?
+            WHERE CpfOrCnpjUser = ?
+        `;
+        try {
+            const [rows] = await this.db.query(query, [cpfOrCnpjUser]);
+            const users = rows as User[];
+            return users[0];
+        } catch (error) {
+            throw error;
+        }
+    }
+    
+    async findById(id: number): Promise<User> {
+        const query = `
+            SELECT
+                IdUser as idUser, NomeUser as nomeuser, 
+                EmailUser as emailuser, TelUser as teluser,
+                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
+                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
+            FROM users
+            WHERE idUser = ?
         `;
         try {
             const [rows] = await this.db.query(query, [id]);
@@ -111,11 +209,51 @@ export default class UserRepository implements IUserRepository {
         }
     }
     
-    async remove(id: number): Promise<void> {}
+    async findByIdWithPassword(id: number): Promise<User> {
+        const query = `
+            SELECT
+                IdUser as idUser, NomeUser as nomeuser, SenhaUser as senhauser,
+                EmailUser as emailuser, TelUser as teluser,
+                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
+                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
+            FROM users
+            WHERE idUser = ?
+        `;
+        try {
+            const [rows] = await this.db.query(query, [id]);
+            const users = rows as User[];
+            return users[0];
+        } catch (error) {
+            throw error;
+        }
+    }
+    
+    async remove(user: User): Promise<void> {
+        let connection;
+        const query = `
+            CALL spExcluirUsuarios(?)
+        `;
+
+        try {
+            connection = await this.db.getConnection();
+
+            await connection.execute(query, [
+                user.idUser,
+            ]);
+        } catch (error) {
+            throw error
+        } finally {
+            if(connection) connection.release()
+        }
+    }
     
     async findAll(): Promise<Array<User>> {
         const query = `
-            SELECT *
+            SELECT
+                IdUser as idUser, NomeUser as nomeuser, 
+                EmailUser as emailuser, TelUser as teluser,
+                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
+                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as ruleuser
             FROM users
         `;
         try {
