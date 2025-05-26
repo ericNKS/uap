@@ -22,24 +22,28 @@ export default class UpdateUserDTO {
     @IsOptional()
     @ValidateNested()
     @Type(() => PasswordDTO)
-    senhaUser?: PasswordDTO;
+    SenhaUser?: PasswordDTO;
 
     @IsOptional()
     @IsString()
-    nomeuser?: string;
+    NomeUser?: string;
 
     @IsOptional()
     @IsString()
-    emailuser?: string;
+    EmailUser?: string;
 
     @IsOptional()
     @IsString()
-    teluser?: string;
+    TelUser?: string;
 
     @IsOptional()
     @IsString()
-    genuser?: string;
+    GenUser?: string;
 
     @IsOptional()
-    imgurluser?: string;
+    @IsString()
+    PronomeUser?: string;
+
+    @IsOptional()
+    ImgUrlUser?: string;
 }

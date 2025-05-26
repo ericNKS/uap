@@ -13,39 +13,45 @@ class PasswordDTO {
 
 export class CreateUserRequest {
   @IsString()
-  nomeUser: string = '';
+  NomeUser: string = '';
 
   @IsEmail()
-  emailUser: string = '';
+  EmailUser: string = '';
 
   @ValidateNested()
   @Type(() => PasswordDTO)
-  senhaUser: PasswordDTO = new PasswordDTO();
+  SenhaUser: PasswordDTO = new PasswordDTO();
 
   @IsString()
   @IsOptional()
-  telUser?: string = '';
+  TelUser?: string = '';
 
   @IsString()
   @Length(11, 16)
-  cpfOrCnpjUser: string = '';
+  CpfOrCnpjUser: string = '';
 
   @IsString()
   @IsOptional()
-  crpUser?: string = '';
+  CrpUser?: string = '';
 
   @IsString()
   @IsOptional()
-  imgurlUser?: string = '';
+  ImgUrlUser?: string = '';
 
   @IsString()
-  genUser: string = '';
+  GenUser: string = '';
+
+  @IsString()
+  PronomeUser: string = '';
 
   @IsString()
   @IsOptional()
-  rulesUser?: string = 'RULE_USER';
+  RulesUser?: string = 'RULE_USER';
 
   @IsString()
-  userType: string = 'paciente'
+  StsVerificarEmail: boolean = false;
+
+  @IsString()
+  StsAtivoUser: string = 's'
 
 }

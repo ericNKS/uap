@@ -10,7 +10,7 @@ export default class User {
     public GenUser: string = '';
     public PronomeUser: string = '';
     public RulesUser: string = 'RULE_PACIENTE';
-    public StsVerificarEmail: string = '';
+    public StsVerificarEmail: boolean = false;
     public StsAtivoUser: string = '';
 
     public toJson(): Record<string, any> {
