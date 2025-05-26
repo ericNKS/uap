@@ -1,28 +1,32 @@
 export default class User {
-    public readonly idUser?: number = 0;
-    public nomeuser: string = '';
-    public emailuser: string = '';
-    public senhauser: string = '';
-    public teluser?: string = '';
-    public cpforcnpjuser: string = '';
-    public crpuser?: string = '';
-    public imgurluser?: string = '';
-    public genuser: string = '';
-    public rulesuser: string = 'paciente';
-    public stsativouser: string = '';
+    public readonly IdUser?: number = 0;
+    public NomeUser: string = '';
+    public EmailUser: string = '';
+    public SenhaUser: string = '';
+    public TelUser?: string = '';
+    public CpfOrCnpjUser: string = '';
+    public CrpUser?: string = '';
+    public ImgUrlUser?: string = '';
+    public GenUser: string = '';
+    public PronomeUser: string = '';
+    public RulesUser: string = 'RULE_PACIENTE';
+    public StsVerificarEmail: string = '';
+    public StsAtivoUser: string = '';
 
     public toJson(): Record<string, any> {
         return {
-            idUser: this.idUser,
-            nomeuser: this.nomeuser,
-            emailuser: this.emailuser,
-            teluser: this.teluser,
-            cpforcnpjuser: this.cpforcnpjuser,
-            crpuser: this.crpuser,
-            imgurluser: this.imgurluser,
-            genuser: this.genuser,
-            rulesuser: this.rulesuser,
-            stsativouser: this.stsativouser,
+            IdUser: this.IdUser,
+            NomeUser: this.NomeUser,
+            EmailUser: this.EmailUser,
+            TelUser: this.TelUser,
+            CpfOrCnpjUser: this.CpfOrCnpjUser,
+            CrpUser: this.CrpUser,
+            ImgUrlUser: this.ImgUrlUser,
+            GenUser: this.GenUser,
+            PronomeUser: this.PronomeUser,
+            RulesUser: this.RulesUser,
+            StsVerificarEmail: this.StsVerificarEmail,
+            StsAtivoUser: this.StsAtivoUser,
         }
     }
 }
