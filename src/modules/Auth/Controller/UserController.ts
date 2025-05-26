@@ -10,7 +10,6 @@ import { plainToInstance } from "class-transformer";
 import UpdateUserDTO from "../DTO/UpdateUserDTO";
 import { validate } from "class-validator";
 import FormExceptions from "../../../utils/FormExceptions";
-import User from "../Entities/User";
 import UpdateUser from "../UseCase/UpdateUser";
 
 export default class UserController {
