@@ -6,6 +6,14 @@ CREATE DATABASE if NOT EXISTS UAP;
 
 -- Criação das Tabelas
 
+/* 
+	Criação da tabela Usuário, esta tabela engloba todas as três 
+	possibilidades de usuários possíveis no Banco de Dados, 
+	sendo eles: Pacientes, Especialistas e Administradores.
+	Eles, por sua vez, são diferenciados por um atributo
+	nomeado 'RulesUSer'.
+*/
+
 CREATE TABLE if NOT EXISTS users(
 IdUser BIGINT AUTO_INCREMENT PRIMARY KEY,
 NomeUser VARCHAR(70) NOT NULL,
@@ -22,6 +30,11 @@ StsVerificarEmail BOOLEAN NOT NULL DEFAULT FALSE,
 StsAtivoUser CHAR(1) NOT NULL
 );
 
+/* 
+	Criação da tabela Consultas, esta tabela tem duas chaves 
+	estrangeiras, advindas da tabela 'Paciente', possuindo 
+	Data, Horário e Informações adicionais da consulta.
+*/
 
 CREATE TABLE if NOT EXISTS consultas(
 IdConsulta BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -35,6 +48,11 @@ FOREIGN KEY(IdPaciente) REFERENCES users(IdUser),
 FOREIGN KEY(IdEspecialista) REFERENCES users(IdUser)
 );
 
+/* 
+	Criação da tabela Expediente, esta tabela representa
+	o expediente de cada Especialista registrado no
+	banco de dados, tendo sua data e hora.
+*/
 
 CREATE TABLE if NOT EXISTS expediente(
 IdExpediente BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -45,6 +63,15 @@ StsAtivoExpediente CHAR(1) NOT NULL DEFAULT 's',
 FOREIGN KEY(IdUser) REFERENCES users(IdUser)
 );
 
+/* 
+	Criação da tabela Eventos, esta tabela possui
+	todas as informações necessárias para a 
+	criação de eventos, como nome, data, hora,
+	local, informações e imagem. Um adendo é 
+	que, por ser uma relação muitos para muitos,
+	as chaves estrangeiras serão guardadas em outa
+	tabela.
+*/
 
 CREATE TABLE if NOT EXISTS eventos(
 IdEvento BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -53,9 +80,16 @@ DtEvento DATE NOT NULL,
 HrEvento TIME NOT NULL,
 LocalEvento VARCHAR(100) NOT NULL,
 InfoEvento TEXT NOT NULL,
-ImgUrlEvento TEXT
+ImgUrlEvento TEXT,
+StsAtivoEvento CHAR(1) NOT NULL DEFAULT 'n'
 );
 
+/* 
+	Criação da tabela UserEventos, esta tabela 
+	tem duas chaves estrangeiras, referenciando
+	tanto a tabela de Usuários quanto a tabela 
+	de Eventos.
+*/
 
 CREATE TABLE if NOT EXISTS usereventos(
 IdUserEventos BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -89,7 +123,7 @@ BEGIN
 	
 	if vIdUser = 0 then
 		INSERT INTO users (NomeUser, EmailUser, SenhaUser, TelUser, CpfOrCnpjUser, GenUser, PronomeUser, StsAtivoUser)
-		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pGenUser, pPronomeUser, 'n');
+		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pGenUser, pPronomeUser, 's');
 	END if;
 END
 $$
@@ -116,7 +150,7 @@ BEGIN
 	
 	if viduser = 0 then
 		INSERT INTO users (NomeUser, EmailUser, SenhaUser, TelUser, CpfOrCnpjUser, CrpUser, GenUser, PronomeUser, RulesUser, StsAtivoUser)
-		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pCrpUser, pGenUser, pPronomeUser, 'RULE_ESPECIALISTA_PENDENTE', 'n');
+		VALUES (pNomeUser, pEmailUser, pSenhaUser, pTelUser, pCpfOrCnpjUser, pCrpUser, pGenUser, pPronomeUser, 'RULE_ESPECIALISTA_PENDENTE', 's');
 	END if;
 END
 $$
@@ -184,6 +218,7 @@ BEGIN
 	SELECT u.IdUser,
 			 u.NomeUser,
 			 u.EmailUser, 
+			 sfFormatarTel(u.TelUser) AS 'TelUser',
 			 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CpfOrCnpjUser',
 			 u.GenUser,
 			 u.pPronomeUser
@@ -200,6 +235,7 @@ BEGIN
 	SELECT u.IdUser,
 			 u.NomeUser,
 			 u.EmailUser, 
+			 sfFormatarTel(u.TelUser) AS 'TelUser',
 			 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CpfOrCnpjUser',
 			 sfFormatarCrp(u.CrpUser) AS 'CrpUser',
 			 u.ImgUrlUser,
@@ -218,6 +254,7 @@ BEGIN
 	SELECT u.IdUser,
 			 u.NomeUser,
 			 u.EmailUser, 
+			 sfFormatarTel(u.TelUser) AS 'TelUser',
 			 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CpfOrCnpjUser',
 			 sfFormatarCrp(u.CrpUser) AS 'CrpUser',
 			 u.ImgUrlUser,
@@ -496,14 +533,50 @@ BEGIN
 	
 	if vIdEspecialista = pIdEspecialista then
 		SELECT c.IdConsulta,
-				 u.NomeUser,
-				 u.EmailUser,
+				 pac.NomeUser,
+				 pac.EmailUser,
 				 c.DtConsulta,
 				 c.HrConsulta,
+				 esp.NomeUser,
 				 c.InfoConsulta
-		FROM consultas c JOIN users u
-							ON c.IdPaciente = u.IdUser
+		FROM consultas c JOIN users pac
+							  ON c.IdPaciente = pac.IdUser
+							  JOIN users esp
+							  ON c.IdEspecialista = esp.IdUser					
 		WHERE c.StsAtivoConsulta = 'n';
+	END if;
+END
+$$
+
+
+delimiter $$
+CREATE PROCEDURE spListarConsultasConfirmadasPorPaciente(
+	IN pIdPaciente BIGINT
+)
+BEGIN
+	DECLARE vIdPaciente BIGINT DEFAULT 0;
+	
+	SELECT if(COUNT(u.IdUser) <> 1, 0 , u.IdUser) INTO vIdPaciente
+	FROM users u
+	WHERE pIdEspecialista = u.IdUser
+	AND u.StsAtivoUser = 's'
+	AND u.RulesUser = 'RULE_PACIENTE'
+	GROUP BY(u.IdUser);
+	
+	if vIdPaciente = pIdPaciente then
+		SELECT c.IdConsulta,
+				 pac.NomeUser,
+				 pac.EmailUser,
+				 c.DtConsulta,
+				 c.HrConsulta,
+				 esp.NomeUser,
+				 c.InfoConsulta
+		FROM consultas c JOIN users pac
+							  ON c.IdPaciente = pac.IdUser
+							  JOIN users esp
+							  ON c.IdEspecialista = esp.IdUser					
+		WHERE c.StsAtivoConsulta = 's'
+		AND pIdPaciente = pac.IdUser;
 	END if;
 END
 $$
@@ -530,8 +603,106 @@ END
 $$
 
 
+DELIMITER $$
+CREATE PROCEDURE spAdicionarEvento(
+	IN pIdEspecialista BIGINT,
+	IN pNomeEvento VARCHAR(70),
+	IN pDtEvento DATE,
+	IN pHrEvento TIME,
+	IN pLocalEvento VARCHAR(100),
+	IN pInfoEvento TEXT,
+	IN pImgUrlEvento TEXT
+)
+BEGIN 
+	DECLARE vIdEvento BIGINT DEFAULT 0;
+	
+	INSERT INTO eventos(NomeEvento, DtEvento, HrEvento, LocalEvento, InfoEvento, ImgUrlEvento, e.StsAtivoEvento)
+	VALUES (pNomeEvento, pDtEvento, pHrEvento, pLocalEvento, pInfoEvento, pImgUrlEvento, 's');
+
+	SET vIdEvento = LAST_INSERT_ID();
+	
+	INSERT INTO usereventos(IdUser, IdEvento)
+	VALUES (pIdEspecialista, vIdEvento);
+END
+$$
+
+
+delimiter $$
+CREATE PROCEDURE spListarEventosAtivos()
+BEGIN
+	SELECT e.IdEvento,
+			 e.NomeEvento,
+			 u.NomeUser,
+			 e.DtEvento,
+			 e.HrEvento,
+			 e.LocalEvento,
+			 e.InfoEvento,
+			 e.ImgUrlEvento
+	FROM usereventos ue JOIN users u
+							  ON ue.IdUser = u.IdUser
+							  JOIN eventos e
+							  ON ue.IdEvento = e.IdEvento
+	WHERE e.StsAtivoEvento = 's';
+END
+$$
+
+
+delimiter $$
+CREATE PROCEDURE spListarTodosEventos()
+BEGIN
+	SELECT e.IdEvento,
+			 e.NomeEvento,
+			 u.NomeUser,
+			 u.CrpUser,
+			 e.DtEvento,
+			 e.HrEvento,
+			 e.LocalEvento,
+			 e.InfoEvento,
+			 e.ImgUrlEvento
+	FROM usereventos ue JOIN users u
+							  ON ue.IdUser = u.IdUser
+							  JOIN eventos e
+							  ON ue.IdEvento = e.IdEvento;
+END
+$$
+
+
+delimiter $$
+CREATE PROCEDURE spDesativarEvento(
+	pIdEvento BIGINT
+)
+BEGIN
+	UPDATE eventos
+	SET StsAtivoEvento = 'n'
+	WHERE IdEvento = pIdEvento;
+END
+$$
+
+
+delimiter $$
+CREATE PROCEDURE spAtivarEvento(
+	pIdEvento BIGINT
+)
+BEGIN
+	UPDATE eventos
+	SET StsAtivoEvento = 's'
+	WHERE IdEvento = pIdEvento;
+END
+$$
+
+
 
 -- Criação das Functions
+
+
+/*
+	Criação da função sfFormatarCpfOuCnpj, esta função tem como objetivo 
+	formatar automaticamente os valores recebidos como CPF ou CNPJ, 
+	identificando a quantidade de caracteres e inserindo pontos, 
+	traços e barras conforme necessário.
+	Ex: CPF: XXX.XXX.XXX-XX
+	Ex CNPJ: XX.XXX.XXX/XXXX-XX
+*/
 
 delimiter $$
 CREATE FUNCTION sfFormatarCpfOuCnpj(
@@ -565,6 +736,12 @@ BEGIN
 END
 $$
 
+/*
+	Criação da função sfFormatarTel, esta função tem como objetivo 
+	formatar automaticamente o número de telefone inserido pelo 
+	usuário, considerando o padrão brasileiro de 11 dígitos
+	Ex: (XX) XXXXX-XXXX.
+*/
 
 delimiter $$
 CREATE FUNCTION sfFormatarTel(
@@ -589,6 +766,12 @@ BEGIN
 END
 $$
 
+/*
+	Criação da função sfFormatarCrp, esta função tem como objetivo 
+	formatar automaticamente o registro CRP do Especialista, 
+	adicionando um traço antes dos dois primeiros caracteres.
+	Ex: XX/XXXXX
+*/
 
 delimiter $$
 CREATE FUNCTION sfFormatarCrp(
@@ -615,6 +798,13 @@ $$
 
 -- Criação das Triggers
 
+
+/*
+	Criação da trigger trDesativarExpedienteAposConsulta, esta trigger tem 
+	como objetivo atualizar automaticamente o expediente do especialista 
+	para 'inativa' após o paciente marcar uma consulta.
+*/
+
 delimiter $$
 CREATE TRIGGER trDesativarExpedienteAposConsulta
 AFTER INSERT ON consultas
@@ -632,10 +822,18 @@ $$
 
 -- Criação das Views
 
-CREATE VIEW vEspecialistas_Ativos AS
+
+/*
+	Criação da view vwEspecialistasAtivos, esta view tem como objetivo 
+	representar todos os especialistas ativos, incluindo informações 
+	pessoais e dados formatados para visualização.
+*/
+
+CREATE VIEW vwEspecialistas_Ativos AS
 SELECT u.IdUser AS 'ID do Especialista',
 		 u.NomeUser AS 'Nome do Especialista',
-		 u.EmailUser AS 'Email do Especialista', 
+		 u.EmailUser AS 'Email do Especialista',
+		 sfFormatarTel(u.TelUser) AS 'Telefone do Especialista',
 		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Especialista',
 		 sfFormatarCrp(u.CrpUser) AS 'CRP do Especialista',
 		 u.ImgUrlUser AS 'Imagem do Especialista',
@@ -645,11 +843,18 @@ FROM users u
 WHERE u.StsAtivoUser = 's'
 AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO';
 
+/*
+	Criação da view vwEspecialistas_Pendentes, esta view tem como objetivo 
+	representar todos os especialistas que necessitam a permissão de um
+	adminstrador, incluindo suas informações pessoais e dados formatados 
+	para visualização.
+*/
 
-CREATE VIEW vEspecialistas_Pendentes AS
+CREATE VIEW vwEspecialistas_Pendentes AS
 SELECT u.IdUser AS 'ID do Especialista',
 		 u.NomeUser AS 'Nome do Especialista',
 		 u.EmailUser AS 'Email do Especialista', 
+		 sfFormatarTel(u.TelUser) AS 'Telefone do Especialista',
 		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Especialista',
 		 sfFormatarCrp(u.CrpUser) AS 'CRP do Especialista',
 		 u.ImgUrlUser AS 'Imagem do Especialista',
@@ -659,11 +864,17 @@ FROM users u
 WHERE u.StsAtivoUser = 's'
 AND u.RulesUser = 'RULE_ESPECIALISTA_PENDENTE';
 
+/*
+	Criação da view vwPacientes, esta view tem como objetivo 
+	representar todos os pacientes incluindo suas informações 
+	pessoais e dados formatados para visualização.
+*/
 
-CREATE VIEW vPacientes AS
+CREATE VIEW vwPacientes AS
 SELECT u.IdUser AS 'ID do Paciente',
 		 u.NomeUser AS 'Nome do Paciente',
 		 u.EmailUser AS 'Email do Paciente', 
+		 sfFormatarTel(u.TelUser) AS 'Telefone do Paciente',
 		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Paciente',
 		 u.GenUser AS 'Gênero do Paciente',
 		 u.PronomeUser AS 'Pronome do Paciente'
@@ -671,13 +882,75 @@ FROM users u
 WHERE u.StsAtivoUser = 's'
 AND u.RulesUser = 'RULE_PACIENTE';
 
+/*
+	Criação da view vwUsuarios_Excluidos, esta view tem como objetivo 
+	representar todos os usuários excluídos, incluindo suas informações 
+	pessoais e dados formatados para visualização.
+*/
 
-CREATE VIEW Usuarios_Excluidos AS
+CREATE VIEW vwUsuarios_Excluidos AS
 SELECT u.IdUser AS 'ID do Usuário',
 		 u.NomeUser AS 'Nome do Usuário',
 		 u.EmailUser AS 'Email do Usuário',
+		 sfFormatarTel(u.TelUser) AS 'Telefone do Usuário',
 		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Usuário',
 		 u.GenUser AS 'Gênero do Usuário',
 		 u.PronomeUser AS 'Pronome do Usuário'
 FROM users u
 WHERE u.StsAtivoUser = 'n';
+
+/*
+	Criação da view vwExpedientes, esta view tem como objetivo 
+	representar todos os expedientes de todos os especialistas.
+*/
+
+CREATE VIEW vwExpedientes AS 
+SELECT e.IdExpediente AS 'Id do Expediente',
+		 u.NomeUser AS 'Nome do Especialista',
+		 e.DtExpediente AS 'Data do Expediente',
+		 e.HrExpediente AS 'Hora do Expediente',
+		 e.StsAtivoExpediente AS 'Status do Expediente'
+FROM expediente e JOIN users u
+						ON e.IdUser = u.IdUser
+ORDER BY e.DtExpediente ASC,
+			e.HrExpediente ASC;
+	
+/*
+	Criação da view vwConsultas_Nao_Confirmadas, esta view tem como objetivo 
+	representar todos as consultas ainda não confirmadas de todos os 
+	especialistas.
+*/	
+			
+CREATE VIEW vwConsultas_Nao_Confirmadas AS	
+SELECT c.IdConsulta AS 'Id da Consulta',
+		 pac.NomeUser 'Nome do Paciente',
+		 pac.EmailUser AS 'Email do Paciente',
+		 esp.NomeUser AS 'Nome do Especialista',
+		 c.DtConsulta AS 'Data da Consulta',
+		 c.HrConsulta AS 'Hora da Consulta',
+		 c.InfoConsulta AS 'Info da Consulta'
+		FROM consultas c JOIN users pac
+							ON c.IdPaciente = pac.IdUser
+							JOIN users esp
+							ON c.IdEspecialista = esp.IdUser
+		WHERE c.StsAtivoConsulta = 'n';
+		
+/*
+	Criação da view vwConsultas_Confirmadas, esta view tem como objetivo 
+	representar todos as consultas, já confirmadas, de todos os 
+	especialistas.
+*/	
+
+CREATE VIEW vwConsultas_Confirmadas AS
+SELECT c.IdConsulta AS 'Id da Consulta',
+		 pac.NomeUser 'Nome do Paciente',
+		 pac.EmailUser AS 'Email do Paciente',
+		 esp.NomeUser AS 'Nome do Especialista',
+		 c.DtConsulta AS 'Data da Consulta',
+		 c.HrConsulta AS 'Hora da Consulta',
+		 c.InfoConsulta AS 'Info da Consulta'
+		FROM consultas c JOIN users pac
+							ON c.IdPaciente = pac.IdUser
+							JOIN users esp
+							ON c.IdEspecialista = esp.IdUser
+		WHERE c.StsAtivoConsulta = 's';
