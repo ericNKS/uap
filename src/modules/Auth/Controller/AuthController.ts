@@ -35,8 +35,8 @@ export default class AuthController {
             const createUserService = new CreateUserPaciente(userRepository);
             
             let user: User;
-            switch (userData.userType) {
-                case 'especialista':
+            switch (userData.RulesUser) {
+                case 'RULE_ESPECIALISTA':
                     user = await createUserService.especialista(userData);
                     break;
                 default:
