@@ -2,10 +2,16 @@ import 'reflect-metadata';
 import fastify from "fastify";
 import multipart from '@fastify/multipart';
 import { PrivateRoute, AdminRoute, PublicRoute } from "./routes/Api";
+import { Database } from './config/database/Database';
+import dotenv from 'dotenv';
+
+dotenv.config()
 
 const app = fastify({
     logger: true
 });
+
+
 
 app.addContentTypeParser('application/json', { parseAs: 'string' }, function (_, body, done) {
     try {
@@ -34,11 +40,20 @@ app.register(AdminRoute);
 app.register(PublicRoute);
 
 const start = async () => {
+
+    let connection;
+    
     try {
+        connection = await Database.getConnection();
+        const [newUsers] = await connection.execute(
+            'CREATE DATABASE IF NOT EXISTS ?',
+            process.env.DB_NAME || 'app',
+        );
+        if (connection) connection.release();
         await app.listen({ 
             port: 3000,
             host: '0.0.0.0'
-        })
+        });
     } catch (err) {
         app.log.error(err)
         process.exit(1)

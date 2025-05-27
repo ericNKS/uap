@@ -16,19 +16,19 @@ export default class CreateUserPaciente {
                 throw new ExceptionValidation(err);
             }
             
-            const hashedPassword = await bcrypt.hash(userRequest.senhaUser.first, 10)
+            const hashedPassword = await bcrypt.hash(userRequest.SenhaUser.first, 10)
 
             const userToSave: User = {
-                nomeuser: userRequest.nomeUser,
-                emailuser: userRequest.emailUser.toLowerCase(),
-                senhauser: hashedPassword,
-                teluser: userRequest.telUser || '',
-                cpforcnpjuser: userRequest.cpfOrCnpjUser,
-                crpuser: userRequest.crpUser || '',
-                imgurluser: userRequest.imgurlUser || '',
-                genuser: userRequest.genUser,
-                rulesuser: userRequest.rulesUser || 'RULE_USER',
-                stsativouser: 'n',
+                NomeUser: userRequest.NomeUser,
+                EmailUser: userRequest.EmailUser.toLowerCase(),
+                SenhaUser: hashedPassword,
+                TelUser: userRequest.TelUser || '',
+                CpfOrCnpjUser: userRequest.CpfOrCnpjUser,
+                CrpUser: userRequest.CrpUser || '',
+                ImgUrlUser: userRequest.ImgUrlUser || '',
+                GenUser: userRequest.GenUser,
+                RulesUser: userRequest.RulesUser || 'RULE_PACIENTE',
+                StsAtivoUser: 'n',
             } as User;
 
             const user = await this.userRepository.createPaciente(userToSave)
@@ -45,19 +45,19 @@ export default class CreateUserPaciente {
             if(err) {
                 throw new Error(err);
             }
-            const hashedPassword = await bcrypt.hash(userRequest.senhaUser.first, 10)
+            const hashedPassword = await bcrypt.hash(userRequest.SenhaUser.first, 10)
 
             const userToSave: User = {
-                nomeuser: userRequest.nomeUser,
-                emailuser: userRequest.emailUser.toLowerCase(),
-                senhauser: hashedPassword,
-                teluser: userRequest.telUser || '',
-                cpforcnpjuser: userRequest.cpfOrCnpjUser,
-                crpuser: userRequest.crpUser || '',
-                imgurluser: userRequest.imgurlUser || '',
-                genuser: userRequest.genUser,
-                rulesuser: userRequest.rulesUser || 'RULE_ESPECIALISTA',
-                stsativouser: 'n',
+                NomeUser: userRequest.NomeUser,
+                EmailUser: userRequest.EmailUser.toLowerCase(),
+                SenhaUser: hashedPassword,
+                TelUser: userRequest.TelUser || '',
+                CpfOrCnpjUser: userRequest.CpfOrCnpjUser,
+                CrpUser: userRequest.CrpUser || '',
+                ImgUrlUser: userRequest.ImgUrlUser || '',
+                GenUser: userRequest.GenUser,
+                RulesUser: userRequest.RulesUser || 'RULE_ESPECIALISTA',
+                StsAtivoUser: 's',
             } as User;
 
             const user = await this.userRepository.createEspecialista(userToSave)
@@ -69,16 +69,16 @@ export default class CreateUserPaciente {
     }
 
     private async validateUser(user: CreateUserRequest): Promise<string | null> {
-        if(user.senhaUser.first !== user.senhaUser.second) {
+        if(user.SenhaUser.first !== user.SenhaUser.second) {
             return 'password validation is invalid';
         }
 
-        let hasUser = await this.userRepository.findByEmail(user.emailUser);
+        let hasUser = await this.userRepository.findByEmail(user.EmailUser);
         if(hasUser) {
             return 'User already exists';
         }
 
-        hasUser = await this.userRepository.findByCpfOrCnpjUser(user.cpfOrCnpjUser);
+        hasUser = await this.userRepository.findByCpfOrCnpjUser(user.CpfOrCnpjUser);
         if(hasUser) {
             return 'User already exists';
         }

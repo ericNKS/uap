@@ -26,19 +26,19 @@ export default class LoginUser {
     }
 
     private async validateUser(form: LoginDTO): Promise<User> {
-        const userToValidate = await this.userRepository.findByEmail(form.emailUser);
+        const userToValidate = await this.userRepository.findByEmail(form.EmailUser);
 
         if(!userToValidate) {
             throw new ExceptionNotFound("email não encontrado");
         }
         
-        const isPasswordValid = await bcrypt.compare(form.senhaUser, userToValidate.senhauser)
+        const isPasswordValid = await bcrypt.compare(form.SenhaUser, userToValidate.SenhaUser)
 
         if(!isPasswordValid) {
             throw new ExceptionValidation("Senha inválida");
         }
 
-        if(userToValidate.stsativouser !== 's') {
+        if(userToValidate.StsAtivoUser !== 's') {
             this.generateAccountActivationToken.execute(userToValidate);
             throw new ExceptionValidation("Conta não validada, verifique o seu email e tente novamente");
         }

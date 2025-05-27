@@ -35,7 +35,7 @@ export default class AuthMiddleware {
 
             const payload = JwtToken.decode(token);
 
-            if (payload.stsativouser !== 's') {
+            if (payload.StsVerificarEmail !== true) {
                 return reply.code(403).send({ error: 'Usuario desativado' });
             }
 

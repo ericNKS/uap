@@ -32,17 +32,17 @@ describe('Teste da atualização do usuário', ()=>{
 
     it('Deve ser feito atualizações basicas', async () => {
         const updateData = new UpdateUserDTO();
-        updateData.nomeuser = 'Updated Name';
-        updateData.emailuser = 'updated@example.com';
+        updateData.NomeUser = 'Updated Name';
+        updateData.EmailUser = 'updated@example.com';
         
         const mockUser = {
-            idUser: 1,
-            nomeuser: 'Old name',
-            teluser: '88988888888',
-            genuser: 'Honda Civic',
-            emailuser: 'teste@gmail.com',
-            imgurluser: '',
-            senhauser: 'hashed-password'
+            IdUser: 1,
+            NomeUser: 'Old name',
+            TelUser: '88988888888',
+            GenUser: 'Honda Civic',
+            EmailUser: 'teste@gmail.com',
+            ImgUrlUser: '',
+            SenhaUser: 'hashed-password'
         } as User;
         
         userRepository.findByIdWithPassword.mockResolvedValue(mockUser);
@@ -50,17 +50,17 @@ describe('Teste da atualização do usuário', ()=>{
         userRepository.update.mockImplementation(async (user) => {
             return {
                 ...user,
-                nomeuser: updateData.nomeuser || user.nomeuser,
-                emailuser: updateData.emailuser || user.emailuser
+                NomeUser: updateData.NomeUser || user.NomeUser,
+                EmailUser: updateData.EmailUser || user.EmailUser
             } as User;
         });
         
         const result = await updateUser.execute(1, updateData);
         
-        expect(result.nomeuser).toBe('Updated Name');
-        expect(result.emailuser).toBe('updated@example.com');
-        expect(result.teluser).toBe('88988888888');
-        expect(result.genuser).toBe('Honda Civic');
+        expect(result.NomeUser).toBe('Updated Name');
+        expect(result.EmailUser).toBe('updated@example.com');
+        expect(result.TelUser).toBe('88988888888');
+        expect(result.GenUser).toBe('Honda Civic');
         
         expect(userRepository.findByIdWithPassword).toHaveBeenCalledWith(1);
         expect(userRepository.update).toHaveBeenCalled();
@@ -68,22 +68,22 @@ describe('Teste da atualização do usuário', ()=>{
 
     it('Espera erro por causa da senha antiga errada', async () => {
         const updateData = new UpdateUserDTO();
-        updateData.nomeuser = 'Updated Name';
-        updateData.emailuser = 'updated@example.com';
-        updateData.senhaUser = {
+        updateData.NomeUser = 'Updated Name';
+        updateData.EmailUser = 'updated@example.com';
+        updateData.SenhaUser = {
             old: '123',
             first: 'nova-senha',
             second: 'nova-senha'
         };
         
         const mockUser = {
-            idUser: 1,
-            nomeuser: 'Old name',
-            teluser: '88988888888',
-            genuser: 'Honda Civic',
-            emailuser: 'teste@gmail.com',
-            imgurluser: '',
-            senhauser: 'hashed-password'
+            IdUser: 1,
+            NomeUser: 'Old name',
+            TelUser: '88988888888',
+            GenUser: 'Honda Civic',
+            EmailUser: 'teste@gmail.com',
+            ImgUrlUser: '',
+            SenhaUser: 'hashed-password'
         } as User;
         
         (bcrypt.compare as jest.Mock).mockResolvedValue(false);

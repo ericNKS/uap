@@ -11,19 +11,19 @@ export default class UpdateUser {
     public async execute(idUser: number, userToUpdate: UpdateUserDTO): Promise<User> {
         try {
             let user = await this.userRepository.findByIdWithPassword(idUser);
-            if(userToUpdate?.senhaUser){
+            if(userToUpdate?.SenhaUser){
                 const err = await this.validatePassword(user, userToUpdate);
                 if (err instanceof Error) {
                     throw err;
                 }
-                user.senhauser = await bcrypt.hash(userToUpdate.senhaUser.first, 10);
+                user.SenhaUser = await bcrypt.hash(userToUpdate.SenhaUser.first, 10);
             }
     
-            user.nomeuser = userToUpdate.nomeuser ?? user.nomeuser;
-            user.emailuser = userToUpdate.emailuser ?? user.emailuser;
-            user.teluser = userToUpdate.teluser ?? user.teluser;
-            user.genuser = userToUpdate.genuser ?? user.genuser;
-            user.imgurluser = userToUpdate.imgurluser ?? user.imgurluser;
+            user.NomeUser = userToUpdate.NomeUser ?? user.NomeUser;
+            user.EmailUser = userToUpdate.EmailUser ?? user.EmailUser;
+            user.TelUser = userToUpdate.TelUser ?? user.TelUser;
+            user.GenUser = userToUpdate.GenUser ?? user.GenUser;
+            user.ImgUrlUser = userToUpdate.ImgUrlUser ?? user.ImgUrlUser;
     
             return await this.userRepository.update(user);
         } catch (error) {
@@ -32,11 +32,11 @@ export default class UpdateUser {
     }
 
     private async validatePassword(user: User, newUser: UpdateUserDTO): Promise<Error | null> {
-        if(!newUser?.senhaUser) return null;
-        if(newUser.senhaUser.first !== newUser.senhaUser.second) 
+        if(!newUser?.SenhaUser) return null;
+        if(newUser.SenhaUser.first !== newUser.SenhaUser.second) 
             return new Error('A senha esta diferente');
     
-        const isValidPassword = await bcrypt.compare(newUser.senhaUser.old, user.senhauser);
+        const isValidPassword = await bcrypt.compare(newUser.SenhaUser.old, user.SenhaUser);
         if(!isValidPassword) return new Error('Senha antiga invalida');
 
         return null;

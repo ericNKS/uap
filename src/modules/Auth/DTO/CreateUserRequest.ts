@@ -48,10 +48,4 @@ export class CreateUserRequest {
   @IsOptional()
   RulesUser?: string = 'RULE_USER';
 
-  @IsString()
-  StsVerificarEmail: boolean = false;
-
-  @IsString()
-  StsAtivoUser: string = 's'
-
 }

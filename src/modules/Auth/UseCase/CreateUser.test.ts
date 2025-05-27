@@ -30,26 +30,27 @@ describe('Testando criação do paciente', () => {
 
     it('Deve registrar um usuario que nao existe', async () => {
         const userToRegister: CreateUserRequest = {
-            nomeUser: 'Eric',
-            emailUser: 'eric@gmail.com',
-            senhaUser: {
+            NomeUser: 'Eric',
+            EmailUser: 'eric@gmail.com',
+            SenhaUser: {
                 first: '12345678rb',
                 second: '12345678rb'
             },
-            cpfOrCnpjUser: '24858927091',
-            genUser: 'Honda Civic',
-            userType: RulesEnum.paciente
+            CpfOrCnpjUser: '24858927091',
+            GenUser: 'Honda Civic',
+            PronomeUser: 'ele/dele',
+            RulesUser: RulesEnum.paciente
         };
 
         const userExpected: User = {
-            idUser: 1,
-            nomeuser: 'Eric',
-            emailuser: 'eric@gmail.com',
-            senhauser: 'hashed-password',
-            cpforcnpjuser: '24858927091',
-            genuser: 'Honda Civic',
-            rulesuser: 'RULE_USER',
-            stsativouser: 'n',
+            IdUser: 1,
+            NomeUser: 'Eric',
+            EmailUser: 'eric@gmail.com',
+            SenhaUser: 'hashed-password',
+            CpfOrCnpjUser: '24858927091',
+            GenUser: 'Honda Civic',
+            RulesUser: 'RULE_USER',
+            StsAtivoUser: 'n',
         } as User;
 
         userRepository.createPaciente.mockResolvedValue(userExpected);

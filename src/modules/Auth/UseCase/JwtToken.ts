@@ -11,6 +11,7 @@ interface UserAuthenticated {
 	imgurluser: string | null,
 	genuser: string,
 	rulesuser: string,
+    StsVerificarEmail: boolean,
 	stsativouser: string,
 	iat: number,
 	exp: number

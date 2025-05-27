@@ -9,7 +9,7 @@ export default class ActiveAccount {
     public async execute(idUser: number): Promise<User> {
         const user = await this.userRepository.findById(idUser);
 
-        user.stsativouser = 's';
+        user.StsAtivoUser = 's';
 
         await this.userRepository.update(user);
 

@@ -19,7 +19,7 @@ export default class GenerateAccountActivationToken {
 
         const emailActivation = {
             token: userToken,
-            idUser: user.idUser
+            idUser: user.IdUser
         };
 
         this.redis.set(`user:tokenActivation:${userToken}`, JSON.stringify(emailActivation), exp);
@@ -85,7 +85,7 @@ export default class GenerateAccountActivationToken {
       <h1>Bem-vinde ao UAP!</h1>
     </div>
     <div class="content">
-      <p>Olá, <strong>${user.nomeuser.split(' ')[0]}</strong>!</p>
+      <p>Olá, <strong>${user.NomeUser.split(' ')[0]}</strong>!</p>
 
       <p>Seja muito bem-vinde ao <strong>UAP</strong>! Estamos felizes em ter você com a gente.</p>
 
@@ -114,7 +114,7 @@ export default class GenerateAccountActivationToken {
 
             `
         }
-        sendMailService.execute(mensagem, [user.emailuser]);
+        sendMailService.execute(mensagem, [user.EmailUser]);
 
     }
 }

@@ -53,27 +53,11 @@ export default class UserController {
         req: FastifyRequest,
         reply: FastifyReply,
     ) {
-        const token = req.headers.authorization?.split(' ')[1];
-
-        if(!token) {
-            return reply.code(404).send({
-                error: 'user not exists'
-            });
-        }
-
-        const userToken = JwtToken.decode(token)
-
-        if(!userToken.idUser) {
-            return reply.code(404).send({
-                error: 'user not exists'
-            });
-        }
-
         const userRepo = new UserRepository(Database);
         const deleteUserService = new DeleteUser(userRepo);
 
         try {
-            await deleteUserService.execute(userToken.idUser);
+            await deleteUserService.execute(req.user.IdUser);
 
             return reply.code(204).send();
         } catch (error) {

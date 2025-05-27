@@ -1,4 +1,4 @@
-import { FastifyInstance } from "fastify";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import AuthController from "../modules/Auth/Controller/AuthController";
 import UserController from "../modules/Auth/Controller/UserController";
 import AuthMiddleware from "../config/Middleware/AuthMiddleware";
@@ -13,6 +13,9 @@ const handleRule = (rules?: Array<string>): Record<string, any> => {
 }
 
 export const PublicRoute = (app: FastifyInstance) => {
+    app.get('/', (req: FastifyRequest, reply: FastifyReply) => {
+        reply.send('Welcome to UAP');
+    })
     app.post('/api/register', AuthController.register.bind(AuthController));
     app.post('/api/login', AuthController.login.bind(AuthController));
     app.get('/api/active/:token', AuthController.verifyEmail.bind(AuthController));
