@@ -1,3 +1,19 @@
+interface IUser {
+    IdUser: number,
+    NomeUser: string,
+    EmailUser: string,
+    SenhaUser: string,
+    TelUser?: string,
+    CpfOrCnpjUser: string,
+    CrpUser?: string,
+    ImgUrlUser?: string,
+    GenUser: string,
+    PronomeUser: string,
+    RulesUser: string,
+    StsVerificarEmail: boolean,
+    StsAtivoUser: string
+}
+
 export default class User {
     public readonly IdUser?: number = 0;
     public NomeUser: string = '';
@@ -28,5 +44,23 @@ export default class User {
             StsVerificarEmail: this.StsVerificarEmail,
             StsAtivoUser: this.StsAtivoUser,
         }
+    }
+
+    static get(body: IUser): User {
+        return {
+            IdUser: body.IdUser,
+            NomeUser: body.NomeUser,
+            EmailUser: body.EmailUser,
+            SenhaUser: body.SenhaUser,
+            TelUser: body.TelUser,
+            CpfOrCnpjUser: body.CpfOrCnpjUser,
+            CrpUser: body.CrpUser,
+            ImgUrlUser: body.ImgUrlUser,
+            GenUser: body.GenUser,
+            PronomeUser: body.PronomeUser,
+            RulesUser: body.RulesUser,
+            StsVerificarEmail: body.StsVerificarEmail,
+            StsAtivoUser: body.StsAtivoUser,
+        } as User
     }
 }

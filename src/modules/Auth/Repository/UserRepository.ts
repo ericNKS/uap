@@ -15,18 +15,18 @@ export default class UserRepository implements IUserRepository {
             connection = await this.db.getConnection();
             
             await connection.execute(query, [
-                user.nomeuser,
-                user.emailuser,
-                user.senhauser,
-                user.teluser,
-                user.cpforcnpjuser,
-                user.genuser,
-                'pronome'
+                user.NomeUser,
+                user.EmailUser,
+                user.SenhaUser,
+                user.TelUser,
+                user.CpfOrCnpjUser,
+                user.GenUser,
+                user.PronomeUser,
             ]);
             
             const [newUsers] = await connection.execute<mysql.RowDataPacket[]>(
-                'SELECT iduser FROM users WHERE cpforcnpjuser = ? LIMIT 1',
-                [user.cpforcnpjuser]
+                'spPegarUserCpfOrCnpj(?)',
+                [user.CpfOrCnpjUser]
             );
             
             if (newUsers.length === 0) {
@@ -35,7 +35,8 @@ export default class UserRepository implements IUserRepository {
             
             const idUser = newUsers[0].iduser;
             
-            return {...user, idUser} as User;
+            const userWithId = {...user, IdUser: idUser};
+            return User.get(userWithId);
         } catch (error) {
             throw error;
         } finally {
@@ -51,19 +52,19 @@ export default class UserRepository implements IUserRepository {
             connection = await this.db.getConnection();
             
             await connection.execute(query, [
-                user.nomeuser,
-                user.emailuser,
-                user.senhauser,
-                user.teluser,
-                user.cpforcnpjuser,
-                user.crpuser,
-                user.genuser,
-                user.rulesuser
+                user.NomeUser,
+                user.EmailUser,
+                user.SenhaUser,
+                user.TelUser,
+                user.CpfOrCnpjUser,
+                user.CrpUser,
+                user.GenUser,
+                user.RulesUser
             ]);
             
             const [newUsers] = await connection.execute<mysql.RowDataPacket[]>(
                 'SELECT iduser FROM users WHERE cpforcnpjuser = ? LIMIT 1',
-                [user.cpforcnpjuser]
+                [user.CpfOrCnpjUser]
             );
             
             if (newUsers.length === 0) {
@@ -72,7 +73,7 @@ export default class UserRepository implements IUserRepository {
             
             const idUser = newUsers[0].iduser;
             
-            return {...user, idUser} as User;
+            return {...user, IdUser: idUser} as User;
         } catch (error) {
             throw error;
         } finally {
@@ -86,11 +87,9 @@ export default class UserRepository implements IUserRepository {
                 users u
             SET
                 u.NomeUser = ?,
-                u.EmailUser = ?,
                 u.TelUser = ?,
                 u.GenUser = ?,
                 u.ImgUrlUser = ?,
-                u.StsAtivoUser = ?
             WHERE
                 u.IdUser = ?;
         `;
@@ -99,55 +98,45 @@ export default class UserRepository implements IUserRepository {
                 users u
             SET
                 u.SenhaUser = ?,
-                u.NomeUser = ?,
-                u.EmailUser = ?,
                 u.TelUser = ?,
                 u.GenUser = ?,
                 u.ImgUrlUser = ?,
-                u.StsAtivoUser = ?
             WHERE
                 u.IdUser = ?;
         `;
 
         const selectQuery = `
-            SELECT
-                IdUser as idUser, NomeUser as nomeuser, 
-                EmailUser as emailuser, TelUser as teluser,
-                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
-                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
-            FROM users
-            WHERE IdUser = ?
+            CALL spPegarUserId(?)
         `;
 
         try {
             let updateQuery = updateWithouPasswordQuery;
             let values = [
-                user.nomeuser,
-                user.emailuser,
-                user.teluser,
-                user.genuser,
-                user.imgurluser,
-                user.stsativouser,
-                user.idUser
+                user.NomeUser,
+                user.TelUser,
+                user.GenUser,
+                user.ImgUrlUser,
+                user.IdUser,
+                user.PronomeUser
             ];
 
-            if(user.senhauser){
+            if(user.SenhaUser){
                 updateQuery = updateWithPasswordQuery;
                 values = [
-                    user.senhauser,
-                    user.nomeuser,
-                    user.emailuser,
-                    user.teluser,
-                    user.genuser,
-                    user.imgurluser,
-                    user.stsativouser,
-                    user.idUser
+                    user.SenhaUser,
+                    user.NomeUser,
+                    user.EmailUser,
+                    user.TelUser,
+                    user.GenUser,
+                    user.PronomeUser,
+                    user.ImgUrlUser,
+                    user.IdUser
                 ];    
             }
 
             await this.db.query(updateQuery, values);
 
-            const [rows] = await this.db.query(selectQuery, [user.idUser]);
+            const [rows] = await this.db.query(selectQuery, [user.IdUser]);
             const users = rows as User[];
             return users[0];
 
@@ -238,7 +227,7 @@ export default class UserRepository implements IUserRepository {
             connection = await this.db.getConnection();
 
             await connection.execute(query, [
-                user.idUser,
+                user.IdUser,
             ]);
         } catch (error) {
             throw error
