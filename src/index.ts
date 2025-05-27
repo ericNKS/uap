@@ -44,11 +44,11 @@ const start = async () => {
     let connection;
     
     try {
+        const dbName = process.env.DB_NAME || 'app';
+
         connection = await Database.getConnection();
-        const [newUsers] = await connection.execute(
-            'CREATE DATABASE IF NOT EXISTS ?',
-            process.env.DB_NAME || 'app',
-        );
+        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
+
         if (connection) connection.release();
         await app.listen({ 
             port: 3000,
