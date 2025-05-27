@@ -178,6 +178,56 @@ $$
 
 
 delimiter $$
+CREATE PROCEDURE spAtualizarUsuario (
+	IN IdUser BIGINT,
+	IN NomeUser VARCHAR(70),
+	IN EmailUser VARCHAR(100),
+	IN TelUser VARCHAR(20),
+	IN GenUser VARCHAR(30),
+	IN PronomeUser VARCHAR(10)
+)
+BEGIN
+	DECLARE vIdUser BIGINT DEFAULT 0;
+	SELECT if(COUNT(u.IdUser) <> 1,0, u.IdUser) INTO vIdUser
+	FROM users u
+	WHERE pIdUser = u.IdUser
+	GROUP BY(u.IdUser);
+	
+	if vIdUser = pIdUser then
+		UPDATE users u
+		SET NomeUser = pNomeUser,
+		EmailUser = pEmailUser,
+		TelUser = pTelUser,
+		GenUser = pGenUser,
+		PronomeUser = pPronomeUser
+		WHERE vIdUser = u.IdUser;
+	END if;
+END
+$$
+
+
+delimiter $$
+CREATE PROCEDURE spAtualizarSenha (
+	IN pIdUser BIGINT,
+	IN pSenhaUser VARCHAR(100)
+)
+BEGIN
+	DECLARE vIdUser BIGINT DEFAULT 0;
+	SELECT if(COUNT(u.IdUser) <> 1,0, u.IdUser) INTO vIdUser
+	FROM users u
+	WHERE pIdUser = u.IdUser
+	GROUP BY(u.IdUser);
+	
+	if vIdUser = pIdUser then
+		UPDATE users u
+		SET SenhaUser = pSenhaUser
+		WHERE vIdUser = u.IdUser;
+	END if;
+END
+$$
+
+
+delimiter $$
 CREATE PROCEDURE spAdicionarImgUsuario(
 	IN pIdUser BIGINT,
 	IN pImgUrlUser TEXT
@@ -643,6 +693,26 @@ BEGIN
 							  JOIN eventos e
 							  ON ue.IdEvento = e.IdEvento
 	WHERE e.StsAtivoEvento = 's';
+END
+$$
+
+
+delimiter $$
+CREATE PROCEDURE spListarEventosPendentes()
+BEGIN
+	SELECT e.IdEvento,
+			 e.NomeEvento,
+			 u.NomeUser,
+			 e.DtEvento,
+			 e.HrEvento,
+			 e.LocalEvento,
+			 e.InfoEvento,
+			 e.ImgUrlEvento
+	FROM usereventos ue JOIN users u
+							  ON ue.IdUser = u.IdUser
+							  JOIN eventos e
+							  ON ue.IdEvento = e.IdEvento
+	WHERE e.StsAtivoEvento = 'n';
 END
 $$
 
