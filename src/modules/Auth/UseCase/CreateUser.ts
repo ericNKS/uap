@@ -28,7 +28,8 @@ export default class CreateUserPaciente {
                 ImgUrlUser: userRequest.ImgUrlUser || '',
                 GenUser: userRequest.GenUser,
                 RulesUser: userRequest.RulesUser || 'RULE_PACIENTE',
-                StsAtivoUser: 'n',
+                StsVerificarEmail: false,
+                StsAtivoUser: 's',
             } as User;
 
             const user = await this.userRepository.createPaciente(userToSave)
@@ -57,6 +58,7 @@ export default class CreateUserPaciente {
                 ImgUrlUser: userRequest.ImgUrlUser || '',
                 GenUser: userRequest.GenUser,
                 RulesUser: userRequest.RulesUser || 'RULE_ESPECIALISTA',
+                StsVerificarEmail: false,
                 StsAtivoUser: 's',
             } as User;
 

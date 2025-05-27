@@ -43,5 +43,5 @@ jobs:
       - name: Deploy to GCP
         run:  |
           ssh -o StrictHostKeyChecking=no google@35.199.83.112 \
-            "cd /home/google/uap/ && git pull && docker build -t api . && docker run -d --network host api"
+            "cd /home/google/uap/ && git pull && docker build -t api . && docker restart api"
     

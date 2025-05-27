@@ -49,8 +49,9 @@ describe('Testando criação do paciente', () => {
             SenhaUser: 'hashed-password',
             CpfOrCnpjUser: '24858927091',
             GenUser: 'Honda Civic',
-            RulesUser: 'RULE_USER',
-            StsAtivoUser: 'n',
+            RulesUser: 'RULE_PACIENTE',
+            StsVerificarEmail: false,
+            StsAtivoUser: 's',
         } as User;
 
         userRepository.createPaciente.mockResolvedValue(userExpected);
@@ -61,13 +62,13 @@ describe('Testando criação do paciente', () => {
 
         expect(user).toEqual(userExpected);
         expect(userRepository.createPaciente).toHaveBeenCalledWith(expect.objectContaining({
-            nomeuser: 'Eric',
-            emailuser: 'eric@gmail.com',
-            senhauser: 'hashed-password',
-            cpforcnpjuser: '24858927091',
-            genuser: 'Honda Civic',
-            rulesuser: 'RULE_USER',
-            stsativouser: 'n'
+            NomeUser: 'Eric',
+            EmailUser: 'eric@gmail.com',
+            CpfOrCnpjUser: '24858927091',
+            GenUser: 'Honda Civic',
+            RulesUser: 'RULE_PACIENTE',
+            StsVerificarEmail: false,
+            StsAtivoUser: 's'
         }));
     });
 });
