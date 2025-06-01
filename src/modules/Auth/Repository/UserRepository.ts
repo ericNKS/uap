@@ -1,6 +1,7 @@
 import IUserRepository from "../Interfaces/IUserRepository";
 import User from "../Entities/User";
 import mysql from 'mysql2/promise';
+import ExceptionNotFound from "../Utils/ExceptionNotFound";
 
 export default class UserRepository implements IUserRepository {
     constructor(
@@ -25,7 +26,7 @@ export default class UserRepository implements IUserRepository {
             ]);
             
             const [newUsers] = await connection.execute<mysql.RowDataPacket[]>(
-                'spPegarUserCpfOrCnpj(?)',
+                'CALL spPegarUserCpfOrCnpj(?)',
                 [user.CpfOrCnpjUser]
             );
             
@@ -33,7 +34,7 @@ export default class UserRepository implements IUserRepository {
                 throw new Error('Erro ao criar o paciente: Usuário não encontrado após inserção');
             }
             
-            const idUser = newUsers[0].iduser;
+            const idUser = newUsers[0][0].IdUser;
             
             const userWithId = {...user, IdUser: idUser};
             return User.get(userWithId);
@@ -80,6 +81,19 @@ export default class UserRepository implements IUserRepository {
             if (connection) connection.release();
         }
     }
+    async activeByEmail(user: User): Promise<User> {
+        const selectQuery = `
+            CALL spAtivarEmail(?)
+        `;
+
+        try {
+            await this.db.query(selectQuery, [user.EmailUser]);
+            user.StsVerificarEmail = true;
+            return user;
+        } catch (error) {
+            throw error;
+        }
+    }
     
     async update(user: User): Promise<User> {
         const updateWithouPasswordQuery = `
@@ -100,6 +114,7 @@ export default class UserRepository implements IUserRepository {
                 u.SenhaUser = ?,
                 u.TelUser = ?,
                 u.GenUser = ?,
+                u.Pronome = ?
                 u.ImgUrlUser = ?,
             WHERE
                 u.IdUser = ?;
@@ -147,18 +162,13 @@ export default class UserRepository implements IUserRepository {
     
     async findByEmail(email: string): Promise<User> {
         const query = `
-            SELECT
-                IdUser as idUser,
-                NomeUser as nomeuser,
-                SenhaUser as senhauser, EmailUser as emailuser,
-                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
-            FROM users
-            WHERE emailuser = ?
+            CALL spPegarUserEmail(?)
         `;
         try {
             const [rows] = await this.db.query(query, [email]);
-            const users = rows as User[];
-            return users[0];
+            const rowsArray = rows as Array<User[]>;
+            const users = rowsArray[0][0];
+            return users;
         } catch (error) {
             throw error;
         }
@@ -181,17 +191,14 @@ export default class UserRepository implements IUserRepository {
     
     async findById(id: number): Promise<User> {
         const query = `
-            SELECT
-                IdUser as idUser, NomeUser as nomeuser, 
-                EmailUser as emailuser, TelUser as teluser,
-                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
-                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
-            FROM users
-            WHERE idUser = ?
+            CALL spPegarUserId(?)
         `;
         try {
             const [rows] = await this.db.query(query, [id]);
             const users = rows as User[];
+
+            if(users.length < 1) throw new ExceptionNotFound('Usuario nao encontrado');
+            
             return users[0];
         } catch (error) {
             throw error;

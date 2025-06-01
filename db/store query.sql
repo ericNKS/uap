@@ -691,19 +691,6 @@ END
 $$
 
 
-
--- Criação das Functions
-
-
-/*
-	Criação da função sfFormatarCpfOuCnpj, esta função tem como objetivo 
-	formatar automaticamente os valores recebidos como CPF ou CNPJ, 
-	identificando a quantidade de caracteres e inserindo pontos, 
-	traços e barras conforme necessário.
-	Ex: CPF: XXX.XXX.XXX-XX
-	Ex CNPJ: XX.XXX.XXX/XXXX-XX
-*/
-
 delimiter $$
 CREATE FUNCTION sfFormatarCpfOuCnpj(
 	pCpfOrCnpjUser VARCHAR(20)
@@ -736,13 +723,6 @@ BEGIN
 END
 $$
 
-/*
-	Criação da função sfFormatarTel, esta função tem como objetivo 
-	formatar automaticamente o número de telefone inserido pelo 
-	usuário, considerando o padrão brasileiro de 11 dígitos
-	Ex: (XX) XXXXX-XXXX.
-*/
-
 delimiter $$
 CREATE FUNCTION sfFormatarTel(
 	pTelUser VARCHAR(20)
@@ -765,13 +745,6 @@ BEGIN
     RETURN Resultado;
 END
 $$
-
-/*
-	Criação da função sfFormatarCrp, esta função tem como objetivo 
-	formatar automaticamente o registro CRP do Especialista, 
-	adicionando um traço antes dos dois primeiros caracteres.
-	Ex: XX/XXXXX
-*/
 
 delimiter $$
 CREATE FUNCTION sfFormatarCrp(
@@ -799,12 +772,6 @@ $$
 -- Criação das Triggers
 
 
-/*
-	Criação da trigger trDesativarExpedienteAposConsulta, esta trigger tem 
-	como objetivo atualizar automaticamente o expediente do especialista 
-	para 'inativa' após o paciente marcar uma consulta.
-*/
-
 delimiter $$
 CREATE TRIGGER trDesativarExpedienteAposConsulta
 AFTER INSERT ON consultas
@@ -823,12 +790,6 @@ $$
 -- Criação das Views
 
 
-/*
-	Criação da view vwEspecialistasAtivos, esta view tem como objetivo 
-	representar todos os especialistas ativos, incluindo informações 
-	pessoais e dados formatados para visualização.
-*/
-
 CREATE VIEW vwEspecialistas_Ativos AS
 SELECT u.IdUser AS 'ID do Especialista',
 		 u.NomeUser AS 'Nome do Especialista',
@@ -843,12 +804,6 @@ FROM users u
 WHERE u.StsAtivoUser = 's'
 AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO';
 
-/*
-	Criação da view vwEspecialistas_Pendentes, esta view tem como objetivo 
-	representar todos os especialistas que necessitam a permissão de um
-	adminstrador, incluindo suas informações pessoais e dados formatados 
-	para visualização.
-*/
 
 CREATE VIEW vwEspecialistas_Pendentes AS
 SELECT u.IdUser AS 'ID do Especialista',
@@ -864,12 +819,6 @@ FROM users u
 WHERE u.StsAtivoUser = 's'
 AND u.RulesUser = 'RULE_ESPECIALISTA_PENDENTE';
 
-/*
-	Criação da view vwPacientes, esta view tem como objetivo 
-	representar todos os pacientes incluindo suas informações 
-	pessoais e dados formatados para visualização.
-*/
-
 CREATE VIEW vwPacientes AS
 SELECT u.IdUser AS 'ID do Paciente',
 		 u.NomeUser AS 'Nome do Paciente',
@@ -882,11 +831,6 @@ FROM users u
 WHERE u.StsAtivoUser = 's'
 AND u.RulesUser = 'RULE_PACIENTE';
 
-/*
-	Criação da view vwUsuarios_Excluidos, esta view tem como objetivo 
-	representar todos os usuários excluídos, incluindo suas informações 
-	pessoais e dados formatados para visualização.
-*/
 
 CREATE VIEW vwUsuarios_Excluidos AS
 SELECT u.IdUser AS 'ID do Usuário',
@@ -899,11 +843,6 @@ SELECT u.IdUser AS 'ID do Usuário',
 FROM users u
 WHERE u.StsAtivoUser = 'n';
 
-/*
-	Criação da view vwExpedientes, esta view tem como objetivo 
-	representar todos os expedientes de todos os especialistas.
-*/
-
 CREATE VIEW vwExpedientes AS 
 SELECT e.IdExpediente AS 'Id do Expediente',
 		 u.NomeUser AS 'Nome do Especialista',
@@ -915,11 +854,6 @@ FROM expediente e JOIN users u
 ORDER BY e.DtExpediente ASC,
 			e.HrExpediente ASC;
 	
-/*
-	Criação da view vwConsultas_Nao_Confirmadas, esta view tem como objetivo 
-	representar todos as consultas ainda não confirmadas de todos os 
-	especialistas.
-*/	
 			
 CREATE VIEW vwConsultas_Nao_Confirmadas AS	
 SELECT c.IdConsulta AS 'Id da Consulta',
@@ -935,12 +869,6 @@ SELECT c.IdConsulta AS 'Id da Consulta',
 							ON c.IdEspecialista = esp.IdUser
 		WHERE c.StsAtivoConsulta = 'n';
 		
-/*
-	Criação da view vwConsultas_Confirmadas, esta view tem como objetivo 
-	representar todos as consultas, já confirmadas, de todos os 
-	especialistas.
-*/	
-
 CREATE VIEW vwConsultas_Confirmadas AS
 SELECT c.IdConsulta AS 'Id da Consulta',
 		 pac.NomeUser 'Nome do Paciente',

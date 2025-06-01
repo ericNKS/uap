@@ -45,8 +45,8 @@ export default class AuthController {
             }
 
             const generateAccountActivationToken = new GenerateAccountActivationToken(RedisService.getInstance());
+            
             await generateAccountActivationToken.execute(user);
-
             
             return reply.code(201).send({
                 success: 'Foi enviado um email para verificar a conta'
@@ -59,7 +59,13 @@ export default class AuthController {
                 });
             }
 
-            return reply.code(500).send({error});
+            if(error instanceof Error) {
+                return reply.code(500).send({
+                    error: error.message
+                });
+            }
+
+            return reply.code(500).send(error);
         }
     }
 
@@ -143,6 +149,8 @@ export default class AuthController {
         const activeAccountService = new ActiveAccount(repository);
         
         const idUser = JSON.parse(userToken).idUser;
+
+        console.log(userToken);
         await activeAccountService.execute(idUser);
 
         redis.remove(redisName);

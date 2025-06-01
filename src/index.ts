@@ -44,7 +44,7 @@ const start = async () => {
     let connection;
     
     try {
-        const dbName = process.env.DB_NAME || 'app';
+        const dbName = process.env.DB_NAME || 'uap';
 
         connection = await Database.getConnection();
         await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);

@@ -38,7 +38,7 @@ export default class LoginUser {
             throw new ExceptionValidation("Senha inválida");
         }
 
-        if(userToValidate.StsAtivoUser !== 's') {
+        if(userToValidate.StsVerificarEmail === false) {
             this.generateAccountActivationToken.execute(userToValidate);
             throw new ExceptionValidation("Conta não validada, verifique o seu email e tente novamente");
         }

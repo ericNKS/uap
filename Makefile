@@ -1,17 +1,20 @@
 up:
-	docker-compose -f docker-compose.dev.yml -f docker-compose.yml up -d
+	docker-compose up -d
 
 down:
-	docker-compose -f docker-compose.dev.yml -f docker-compose.yml down
+	docker-compose down --remove-orphans
 
 build:
 	docker-compose build
 
 up-db:
-	docker-compose -f docker-compose.dev.yml up -d
+	docker-compose up -d database
 
 build-db:
-	docker-compose -f docker-compose.dev.yml build
+	docker-compose build database
 
 down-db:
-	docker-compose -f docker-compose.dev.yml down
+	docker-compose down -v
+
+logs:
+	docker-compose logs

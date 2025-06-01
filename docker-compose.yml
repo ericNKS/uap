@@ -55,9 +55,12 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - database
-      - redis
-      - api-send-mail
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started 
+      api-send-mail:
+        condition: service_started 
     command: npm run dev
     networks:
       - database_network
@@ -86,8 +89,6 @@ services:
         condition: service_healthy
       api-send-mail:
         condition: service_started 
-      pride-api:
-        condition: service_started
 
 
 

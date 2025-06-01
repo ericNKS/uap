@@ -1,5 +1,6 @@
 import User from "../Entities/User";
 import IUserRepository from "../Interfaces/IUserRepository";
+import ExceptionNotFound from "../Utils/ExceptionNotFound";
 
 export default class ActiveAccount {
     constructor(
@@ -9,9 +10,9 @@ export default class ActiveAccount {
     public async execute(idUser: number): Promise<User> {
         const user = await this.userRepository.findById(idUser);
 
-        user.StsAtivoUser = 's';
-
-        await this.userRepository.update(user);
+        console.log('id: ',idUser);
+        if(!user)  throw new ExceptionNotFound('Usuario nao encontrado');
+        await this.userRepository.activeByEmail(user);
 
         return user;
     }
