@@ -23,6 +23,7 @@ export class CreateUserRequest {
   SenhaUser: PasswordDTO = new PasswordDTO();
 
   @IsString()
+  @Length(11, 11)
   @IsOptional()
   TelUser?: string = '';
 

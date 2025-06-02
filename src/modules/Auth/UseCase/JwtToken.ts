@@ -2,17 +2,18 @@ import Jwt, { SignOptions } from "jsonwebtoken";
 import User from "../Entities/User";
 
 interface UserAuthenticated {
-	idUser: number,
-	nomeuser: string,
-	emailuser: string,
-	teluser: string,
-	cpforunpjUuser: string | null,
-	crpuser: string | null,
-	imgurluser: string | null,
-	genuser: string,
-	rulesuser: string,
+	IdUser: number,
+	NomeUser: string,
+	EmailUser: string,
+	TelUser: string,
+	CpfOrCnpjUser: string | null,
+	CrpUser: string | null,
+	ImgUrlUser: string | null,
+	GenUser: string,
+	PronomeUser: string,
+	RulesUser: string,
     StsVerificarEmail: boolean,
-	stsativouser: string,
+	StsAtivoUser: string,
 	iat: number,
 	exp: number
 }

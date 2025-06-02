@@ -1,49 +1,23 @@
-import { Type } from "class-transformer";
-import { IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
-import { MultipartFile } from "@fastify/multipart";
-
-class PasswordDTO {
-    @IsString()
-    @MinLength(8)
-    old: string = '';
-
-    @IsString()
-    @MinLength(8)
-    first: string = '';
-
-    @IsString()
-    @MinLength(8)
-    second: string = '';
-}
+import { IsOptional, IsString, Length} from "class-validator";
 
 export default class UpdateUserDTO {
-    
+    @IsOptional()
+    @IsString()
+    NomeUser?: string = undefined;
 
     @IsOptional()
-    @ValidateNested()
-    @Type(() => PasswordDTO)
-    SenhaUser?: PasswordDTO;
+    @Length(11, 11)
+    @IsString()
+    TelUser?: string = undefined;
 
     @IsOptional()
     @IsString()
-    NomeUser?: string;
+    GenUser?: string = undefined;
 
     @IsOptional()
     @IsString()
-    EmailUser?: string;
+    PronomeUser?: string = undefined;
 
     @IsOptional()
-    @IsString()
-    TelUser?: string;
-
-    @IsOptional()
-    @IsString()
-    GenUser?: string;
-
-    @IsOptional()
-    @IsString()
-    PronomeUser?: string;
-
-    @IsOptional()
-    ImgUrlUser?: string;
+    ImgUrlUser?: string = undefined;
 }

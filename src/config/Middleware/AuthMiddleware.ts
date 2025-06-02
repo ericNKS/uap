@@ -35,7 +35,7 @@ export default class AuthMiddleware {
 
             const payload = JwtToken.decode(token);
 
-            if (payload.StsVerificarEmail !== true) {
+            if (payload.StsVerificarEmail != true) {
                 return reply.code(403).send({ error: 'Usuario desativado' });
             }
 
@@ -44,7 +44,7 @@ export default class AuthMiddleware {
                 return reply.code(401).send({ error: 'Token expirado' });
             }
 
-            const userRule = payload.rulesuser;
+            const userRule = payload.RulesUser;
             if (!userRule) {
                 return reply.code(403).send({ error: 'Regra de usuário não encontrada no token' });
             }

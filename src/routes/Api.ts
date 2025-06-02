@@ -25,6 +25,8 @@ export const PrivateRoute = (app: FastifyInstance) => {
     app.get('/api/user', handleRule(), UserController.show.bind(AuthController));
     app.delete('/api/users', handleRule(), UserController.deleteSelf.bind(AuthController));
     app.patch('/api/users', handleRule(), UserController.update.bind(UserController));
+    app.patch('/api/users/image', handleRule(), UserController.updateImage.bind(UserController));
+    app.patch('/api/users/password', handleRule(), UserController.updatePassword.bind(UserController));
 }
 
 export const AdminRoute = (app: FastifyInstance) => {

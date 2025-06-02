@@ -4,6 +4,7 @@ import User from "../Entities/User";
 import IUserRepository from "../Interfaces/IUserRepository";
 import UpdateUser from "./UpdateUser";
 import bcrypt from "bcryptjs"
+import UpdatePasswordUserDTO from '../DTO/UpdatePasswordUserDTO';
 
 jest.mock("bcryptjs")
 
@@ -16,11 +17,14 @@ describe('Teste da atualização do usuário', ()=>{
             createPaciente: jest.fn(),
             createEspecialista: jest.fn(),
             update: jest.fn(),
+            updateImage: jest.fn(),
+            updatePassword: jest.fn(),
             findByEmail: jest.fn(),
+            activeByEmail: jest.fn(),
             findByCpfOrCnpjUser: jest.fn(),
             findById: jest.fn(),
             findByIdWithPassword: jest.fn(),
-            remove: jest.fn(),
+            remove: jest.fn()
         };
         
         updateUser = new UpdateUser(userRepository);
@@ -67,9 +71,7 @@ describe('Teste da atualização do usuário', ()=>{
     });
 
     it('Espera erro por causa da senha antiga errada', async () => {
-        const updateData = new UpdateUserDTO();
-        updateData.NomeUser = 'Updated Name';
-        updateData.EmailUser = 'updated@example.com';
+        const updateData = new UpdatePasswordUserDTO();
         updateData.SenhaUser = {
             old: '123',
             first: 'nova-senha',
@@ -90,11 +92,43 @@ describe('Teste da atualização do usuário', ()=>{
 
         userRepository.findByIdWithPassword.mockResolvedValue(mockUser);
         
-        await expect(updateUser.execute(1, updateData)).rejects.toThrow('Senha antiga invalida');
+        await expect(updateUser.password(1, updateData)).rejects.toThrow('Senha antiga invalida');
 
-        const updateSpy = jest.spyOn(userRepository, 'update');
+        jest.spyOn(userRepository, 'updatePassword');
         
         expect(userRepository.findByIdWithPassword).toHaveBeenCalledWith(1);
-        expect(userRepository.update).not.toHaveBeenCalled();
+        expect(userRepository.updatePassword).not.toHaveBeenCalled();
+    });
+
+    it('Espera atualizar a senha', async () => {
+        const updateData = new UpdatePasswordUserDTO();
+        updateData.SenhaUser = {
+            old: 'hashed-password',
+            first: 'nova-senha',
+            second: 'nova-senha'
+        };
+        
+        const mockUser = {
+            IdUser: 1,
+            NomeUser: 'Old name',
+            TelUser: '88988888888',
+            GenUser: 'Honda Civic',
+            EmailUser: 'teste@gmail.com',
+            ImgUrlUser: '',
+            SenhaUser: 'hashed-password'
+        } as User;
+        
+        (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+        userRepository.findByIdWithPassword.mockResolvedValue(mockUser);
+
+        const userSaved = await updateUser.password(1, updateData)
+        
+        expect(userSaved.SenhaUser).toEqual('nova-senha');
+
+        jest.spyOn(userRepository, 'updatePassword');
+        
+        expect(userRepository.findByIdWithPassword).toHaveBeenCalledWith(1);
+        expect(userRepository.updatePassword).toHaveBeenCalled();
     });
 });

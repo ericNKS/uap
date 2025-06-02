@@ -96,6 +96,7 @@ export default class UserRepository implements IUserRepository {
     }
     
     async update(user: User): Promise<User> {
+        if(!user.IdUser) throw new Error('User sem id');
         const updateWithouPasswordQuery = `
             UPDATE
                 users u
@@ -103,25 +104,9 @@ export default class UserRepository implements IUserRepository {
                 u.NomeUser = ?,
                 u.TelUser = ?,
                 u.GenUser = ?,
-                u.ImgUrlUser = ?,
+                u.PronomeUser = ?
             WHERE
                 u.IdUser = ?;
-        `;
-        const updateWithPasswordQuery = `
-            UPDATE
-                users u
-            SET
-                u.SenhaUser = ?,
-                u.TelUser = ?,
-                u.GenUser = ?,
-                u.Pronome = ?
-                u.ImgUrlUser = ?,
-            WHERE
-                u.IdUser = ?;
-        `;
-
-        const selectQuery = `
-            CALL spPegarUserId(?)
         `;
 
         try {
@@ -130,30 +115,63 @@ export default class UserRepository implements IUserRepository {
                 user.NomeUser,
                 user.TelUser,
                 user.GenUser,
-                user.ImgUrlUser,
+                user.PronomeUser,
                 user.IdUser,
-                user.PronomeUser
             ];
 
-            if(user.SenhaUser){
-                updateQuery = updateWithPasswordQuery;
-                values = [
-                    user.SenhaUser,
-                    user.NomeUser,
-                    user.EmailUser,
-                    user.TelUser,
-                    user.GenUser,
-                    user.PronomeUser,
-                    user.ImgUrlUser,
-                    user.IdUser
-                ];    
-            }
+            await this.db.query(updateQuery, values);
+            
+            const userSaved = await this.findById(user.IdUser);
+            return userSaved;
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updatePassword(user: User): Promise<User> {
+        if(!user.IdUser) throw new Error('Usuario sem id');
+        const updateQuery = `
+            UPDATE
+                users u
+            SET
+                u.SenhaUser = ?
+            WHERE
+                u.IdUser = ?;
+        `;
+
+        try {
+            let values = [
+                user.SenhaUser,
+                user.IdUser,
+            ];
 
             await this.db.query(updateQuery, values);
 
-            const [rows] = await this.db.query(selectQuery, [user.IdUser]);
-            const users = rows as User[];
-            return users[0];
+            const userSaved = await this.findById(user.IdUser);
+            return userSaved;
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateImage(user: User): Promise<User> {
+        if(!user.IdUser) throw new Error('Usuario sem id');
+        const updateQuery = `
+            CALL spAdicionarImgUsuario(?, ?)
+        `;
+
+        try {
+            let values = [
+                user.IdUser,
+                user.ImgUrlUser,
+            ];
+
+            await this.db.query(updateQuery, values);
+
+            const userSaved = await this.findById(user.IdUser);
+            return userSaved;
 
         } catch (error) {
             throw error;
@@ -195,11 +213,11 @@ export default class UserRepository implements IUserRepository {
         `;
         try {
             const [rows] = await this.db.query(query, [id]);
-            const users = rows as User[];
 
-            if(users.length < 1) throw new ExceptionNotFound('Usuario nao encontrado');
+            const rowsArray = rows as Array<User[]>;
+            const users = rowsArray[0][0];
             
-            return users[0];
+            return users;
         } catch (error) {
             throw error;
         }
@@ -208,10 +226,10 @@ export default class UserRepository implements IUserRepository {
     async findByIdWithPassword(id: number): Promise<User> {
         const query = `
             SELECT
-                IdUser as idUser, NomeUser as nomeuser, SenhaUser as senhauser,
-                EmailUser as emailuser, TelUser as teluser,
-                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
-                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
+                IdUser, NomeUser, SenhaUser,
+                EmailUser, TelUser,
+                CpfOrCnpjUser, CrpUser,
+                ImgUrlUser, GenUser, RulesUser, StsAtivoUser
             FROM users
             WHERE idUser = ?
         `;
