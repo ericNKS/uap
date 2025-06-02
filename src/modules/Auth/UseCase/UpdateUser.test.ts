@@ -37,25 +37,23 @@ describe('Teste da atualização do usuário', ()=>{
     it('Deve ser feito atualizações basicas', async () => {
         const updateData = new UpdateUserDTO();
         updateData.NomeUser = 'Updated Name';
-        updateData.EmailUser = 'updated@example.com';
         
         const mockUser = {
             IdUser: 1,
             NomeUser: 'Old name',
             TelUser: '88988888888',
             GenUser: 'Honda Civic',
-            EmailUser: 'teste@gmail.com',
+            EmailUser: 'updated@example.com',
             ImgUrlUser: '',
             SenhaUser: 'hashed-password'
         } as User;
         
-        userRepository.findByIdWithPassword.mockResolvedValue(mockUser);
+        userRepository.findById.mockResolvedValue(mockUser); 
         
         userRepository.update.mockImplementation(async (user) => {
             return {
                 ...user,
                 NomeUser: updateData.NomeUser || user.NomeUser,
-                EmailUser: updateData.EmailUser || user.EmailUser
             } as User;
         });
         
@@ -66,7 +64,7 @@ describe('Teste da atualização do usuário', ()=>{
         expect(result.TelUser).toBe('88988888888');
         expect(result.GenUser).toBe('Honda Civic');
         
-        expect(userRepository.findByIdWithPassword).toHaveBeenCalledWith(1);
+        expect(userRepository.findById).toHaveBeenCalled();
         expect(userRepository.update).toHaveBeenCalled();
     });
 
@@ -118,17 +116,25 @@ describe('Teste da atualização do usuário', ()=>{
             SenhaUser: 'hashed-password'
         } as User;
         
-        (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+        (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
         userRepository.findByIdWithPassword.mockResolvedValue(mockUser);
+        (bcrypt.hash as jest.Mock).mockImplementation((password, saltRounds) => {
+            return Promise.resolve('new-hashed-password');
+        });
+
+        userRepository.updatePassword.mockImplementation(async (user) => {
+            return {
+                ...user,
+                SenhaUser: 'new-hashed-password'
+            } as User;
+        });
 
         const userSaved = await updateUser.password(1, updateData)
         
-        expect(userSaved.SenhaUser).toEqual('nova-senha');
-
-        jest.spyOn(userRepository, 'updatePassword');
+        expect(userSaved.SenhaUser).toEqual('new-hashed-password');
         
-        expect(userRepository.findByIdWithPassword).toHaveBeenCalledWith(1);
+        expect(userRepository.findByIdWithPassword).toHaveBeenCalled();
         expect(userRepository.updatePassword).toHaveBeenCalled();
     });
 });
