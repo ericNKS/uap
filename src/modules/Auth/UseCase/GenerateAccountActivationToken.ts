@@ -6,7 +6,8 @@ import SendMail from "../../../UseCase/SendMail";
 
 export default class GenerateAccountActivationToken {
     constructor(
-        private redis: RedisService
+        private redis: RedisService,
+        private sendMailService: SendMail
     ) {}
 
     async execute(
@@ -23,8 +24,6 @@ export default class GenerateAccountActivationToken {
         };
 
         this.redis.set(`user:tokenActivation:${userToken}`, JSON.stringify(emailActivation), exp);
-
-        const sendMailService = new SendMail();
 
         const mensagem = {
             subject: '🎉 Bem-vindo(a) ao UAP! Ative sua conta agora.',
@@ -114,7 +113,7 @@ export default class GenerateAccountActivationToken {
 
             `
         }
-        sendMailService.execute(mensagem, [user.EmailUser]);
+        this.sendMailService.execute(mensagem, [user.EmailUser]);
 
     }
 }

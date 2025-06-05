@@ -6,7 +6,7 @@ export default interface IUserRepository {
     update: (user: User) => Promise<User>,
     updateImage: (user: User) => Promise<User>,
     updatePassword: (user: User) => Promise<User>,
-    findByEmail: (email: string) => Promise<User>,
+    findByEmail: (email: string) => Promise<User | null>,
     activeByEmail: (user: User) => Promise<User>,
     findByCpfOrCnpjUser: (cpfOrCnpjUser: string) => Promise<User>,
     findById: (id: number) => Promise<User>,

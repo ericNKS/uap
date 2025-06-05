@@ -60,7 +60,7 @@ export default class UserRepository implements IUserRepository {
                 user.CpfOrCnpjUser,
                 user.CrpUser,
                 user.GenUser,
-                user.RulesUser
+                user.PronomeUser
             ]);
             
             const [newUsers] = await connection.execute<mysql.RowDataPacket[]>(
@@ -87,7 +87,7 @@ export default class UserRepository implements IUserRepository {
         `;
 
         try {
-            await this.db.query(selectQuery, [user.EmailUser]);
+            await this.db.query(selectQuery, [user.IdUser]);
             user.StsVerificarEmail = true;
             return user;
         } catch (error) {
@@ -178,13 +178,15 @@ export default class UserRepository implements IUserRepository {
         }
     }
     
-    async findByEmail(email: string): Promise<User> {
+    async findByEmail(email: string): Promise<User | null> {
         const query = `
             CALL spPegarUserEmail(?)
         `;
         try {
             const [rows] = await this.db.query(query, [email]);
             const rowsArray = rows as Array<User[]>;
+            if(!rowsArray[0]) return null;
+            
             const users = rowsArray[0][0];
             return users;
         } catch (error) {

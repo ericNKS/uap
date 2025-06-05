@@ -1,4 +1,5 @@
 import RedisService from "../../../config/database/RedisService";
+import SendMail from "../../../UseCase/SendMail";
 import { LoginDTO } from "../DTO/LoginDTO";
 import User from "../Entities/User";
 import IUserRepository from "../Interfaces/IUserRepository";
@@ -16,7 +17,7 @@ export default class LoginUser {
         generateAccountActivationToken?: GenerateAccountActivationToken
     ) {
         this.generateAccountActivationToken = 
-            generateAccountActivationToken || new GenerateAccountActivationToken(RedisService.getInstance());
+            generateAccountActivationToken || new GenerateAccountActivationToken(RedisService.getInstance(), new SendMail());
     }
 
     public async execute(form: LoginDTO): Promise<string> {

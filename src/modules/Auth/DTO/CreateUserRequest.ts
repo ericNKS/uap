@@ -23,7 +23,7 @@ export class CreateUserRequest {
   SenhaUser: PasswordDTO = new PasswordDTO();
 
   @IsString()
-  @Length(11, 11)
+  @Length(0, 11)
   @IsOptional()
   TelUser?: string = '';
 
@@ -34,19 +34,17 @@ export class CreateUserRequest {
   @IsString()
   @IsOptional()
   CrpUser?: string = '';
-
+  
   @IsString()
-  @IsOptional()
-  ImgUrlUser?: string = '';
-
-  @IsString()
+  @Length(2)
   GenUser: string = '';
 
   @IsString()
+  @Length(2)
   PronomeUser: string = '';
 
   @IsString()
   @IsOptional()
-  RulesUser?: string = 'RULE_USER';
+  RulesUser?: string = 'RULE_PACIENTE';
 
 }

@@ -171,7 +171,7 @@ GROUP BY(u.IdUser);
 	IF vIdUser  = pIdUser then
 		UPDATE users
 		SET StsVerificarEmail = true
-		WHERE u.IdUser = vIdUser;
+		WHERE IdUser = vIdUser;
 	END if;
 END
 $$

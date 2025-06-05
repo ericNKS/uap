@@ -10,7 +10,8 @@ export default class ActiveAccount {
     public async execute(idUser: number): Promise<User> {
         const user = await this.userRepository.findById(idUser);
 
-        console.log('id: ',idUser);
+        console.log(user);
+
         if(!user)  throw new ExceptionNotFound('Usuario nao encontrado');
         await this.userRepository.activeByEmail(user);
 

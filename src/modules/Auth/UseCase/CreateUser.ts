@@ -10,25 +10,26 @@ export default class CreateUserPaciente {
     ) {}
 
     public async paciente(userRequest: CreateUserRequest): Promise<User> {
+        userRequest.EmailUser = userRequest.EmailUser.toLowerCase();
         try {
             const err = await this.validateUser(userRequest)
             if(err != null) {
                 throw new ExceptionValidation(err);
             }
+
             
             const hashedPassword = await bcrypt.hash(userRequest.SenhaUser.first, 10)
 
             const userToSave: User = {
                 NomeUser: userRequest.NomeUser,
-                EmailUser: userRequest.EmailUser.toLowerCase(),
+                EmailUser: userRequest.EmailUser,
                 SenhaUser: hashedPassword,
                 TelUser: userRequest.TelUser || '',
                 CpfOrCnpjUser: userRequest.CpfOrCnpjUser,
-                CrpUser: userRequest.CrpUser || '',
-                ImgUrlUser: userRequest.ImgUrlUser || '',
-                GenUser: userRequest.GenUser,
-                PronomeUser: userRequest.PronomeUser,
-                RulesUser: userRequest.RulesUser || 'RULE_PACIENTE',
+                CrpUser: '',
+                GenUser: userRequest.GenUser || '',
+                PronomeUser: userRequest.PronomeUser || '',
+                RulesUser: 'RULE_PACIENTE',
                 StsVerificarEmail: false,
                 StsAtivoUser: 's',
             } as User;
@@ -42,6 +43,7 @@ export default class CreateUserPaciente {
     }
 
     public async especialista(userRequest: CreateUserRequest): Promise<User> {
+        userRequest.EmailUser = userRequest.EmailUser.toLowerCase();
         try {
             const err = await this.validateUser(userRequest)
             if(err) {
@@ -55,11 +57,10 @@ export default class CreateUserPaciente {
                 SenhaUser: hashedPassword,
                 TelUser: userRequest.TelUser || '',
                 CpfOrCnpjUser: userRequest.CpfOrCnpjUser,
-                CrpUser: userRequest.CrpUser || '',
-                ImgUrlUser: userRequest.ImgUrlUser || '',
+                CrpUser: userRequest.CrpUser,
                 GenUser: userRequest.GenUser,
                 PronomeUser: userRequest.PronomeUser,
-                RulesUser: userRequest.RulesUser || 'RULE_ESPECIALISTA',
+                RulesUser: 'RULE_ESPECIALISTA',
                 StsVerificarEmail: false,
                 StsAtivoUser: 's',
             } as User;
@@ -76,7 +77,7 @@ export default class CreateUserPaciente {
         if(user.SenhaUser.first !== user.SenhaUser.second) {
             return 'password validation is invalid';
         }
-
+        
         let hasUser = await this.userRepository.findByEmail(user.EmailUser);
         if(hasUser) {
             return 'User already exists';

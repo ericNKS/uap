@@ -15,7 +15,7 @@ const handleRule = (rules?: Array<string>): Record<string, any> => {
 export const PublicRoute = (app: FastifyInstance) => {
     app.post('/api/register', AuthController.register.bind(AuthController));
     app.post('/api/login', AuthController.login.bind(AuthController));
-    app.get('/api/active/:token', AuthController.verifyEmail.bind(AuthController));
+    app.get('/api/active/:token', AuthController.validateEmail.bind(AuthController));
     
     app.get('/api/image/:filename', ImageController.show.bind(ImageController));
 }

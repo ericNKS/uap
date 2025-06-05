@@ -15,6 +15,7 @@ import RevokeToken from "../UseCase/RevokeToken";
 import RedisService from "../../../config/database/RedisService";
 import GenerateAccountActivationToken from "../UseCase/GenerateAccountActivationToken";
 import ActiveAccount from "../UseCase/ActiveAccount";
+import SendMail from "../../../UseCase/SendMail";
 
 export default class AuthController {
     static async register(
@@ -27,7 +28,7 @@ export default class AuthController {
             const err = FormExceptions(validationsErr);
             
             if(err) {
-                return reply.code(400).send({ err });
+                return reply.code(400).send(err);
             }
             
             const userRepository = new UserRepository(Database);
@@ -43,10 +44,11 @@ export default class AuthController {
                     user = await createUserService.paciente(userData);
                     break;
             }
-
-            const generateAccountActivationToken = new GenerateAccountActivationToken(RedisService.getInstance());
             
-            await generateAccountActivationToken.execute(user);
+            const sendMailService = new SendMail();
+            const generateAccountActivationToken = new GenerateAccountActivationToken(RedisService.getInstance(), sendMailService);
+            
+            generateAccountActivationToken.execute(user);
             
             return reply.code(201).send({
                 success: 'Foi enviado um email para verificar a conta'
@@ -129,7 +131,7 @@ export default class AuthController {
     }
 
 
-    static async verifyEmail(
+    static async validateEmail(
         req: FastifyRequest<{Params: {token: string}}>,
         reply: FastifyReply
     ) {
@@ -150,11 +152,16 @@ export default class AuthController {
         
         const idUser = JSON.parse(userToken).idUser;
 
-        console.log(userToken);
+        if(!idUser) {
+            return reply.code(404).send({
+                error: 'User não encontrado'
+            });
+        }
+        
         await activeAccountService.execute(idUser);
-
+        
+        
         redis.remove(redisName);
-
         return reply.code(204).send();
     }
     
