@@ -1,19 +1,21 @@
 export default class Consulta {
-    public idconsulta: number = 0;
-    public dtconsulta: Date = new Date();
-    public hrconsulta: string = '';
-    public espcconsulta: string = '';
-    public infoconsulta?: string = '';
-    public iduser?: number = 0;
+    public IdConsulta: number = 0;
+    public IdPaciente: number = 0;
+    public IdEspecialista: number = 0;
+    public DtConsulta: Date = new Date();
+    public HrConsulta: string = '';
+    public InfoConsulta: string = '';
+    public StsAtivoConsulta: string = 'n';
 
     public toJson(): Record<string, any> {
         return {
-            idconsulta: this.idconsulta,
-            dtconsulta: this.dtconsulta.toISOString(),
-            hrconsulta: this.hrconsulta,
-            espcconsulta: this.espcconsulta,
-            infoconsulta: this.infoconsulta,
-            iduser: this.iduser
+            IdConsulta: this.IdConsulta,
+            IdPaciente: this.IdPaciente,
+            IdEspecialista: this.IdEspecialista,
+            DtConsulta: this.DtConsulta.toISOString(),
+            HrConsulta: this.HrConsulta,
+            InfoConsulta: this.InfoConsulta,
+            StsAtivoConsulta: this.StsAtivoConsulta,
         }
     }
 }
