@@ -32,8 +32,9 @@ StsAtivoUser CHAR(1) NOT NULL
 
 /* 
 	Criação da tabela Consultas, esta tabela tem duas chaves 
-	estrangeiras, advindas da tabela 'Paciente', possuindo 
-	Data, Horário e Informações adicionais da consulta.
+	estrangeiras, advindas da tabela 'Paciente'(uma para os
+	especialistas, outro para os pacientes), ela também 
+	possui Data, Horário e Informações adicionais da consulta.
 */
 
 CREATE TABLE if NOT EXISTS consultas(
@@ -51,7 +52,7 @@ FOREIGN KEY(IdEspecialista) REFERENCES users(IdUser)
 /* 
 	Criação da tabela Expediente, esta tabela representa
 	o expediente de cada Especialista registrado no
-	banco de dados, tendo sua data e hora.
+	banco de dados, tendo sua Data e Hora.
 */
 
 CREATE TABLE if NOT EXISTS expediente(
@@ -66,8 +67,8 @@ FOREIGN KEY(IdUser) REFERENCES users(IdUser)
 /* 
 	Criação da tabela Eventos, esta tabela possui
 	todas as informações necessárias para a 
-	criação de eventos, como nome, data, hora,
-	local, informações e imagem. Um adendo é 
+	criação de eventos, como Nome, Data, Hora,
+	Local, Informações e Imagem. Um adendo é 
 	que, por ser uma relação muitos para muitos,
 	as chaves estrangeiras serão guardadas em outa
 	tabela.
@@ -103,6 +104,16 @@ FOREIGN KEY(IdEvento) REFERENCES eventos(IdEvento)
 
 -- Criação de Procedures
 
+/*
+	Criação da Procedure spRegistrarPaciente, esta
+	procedure pega Nome, Email, Senha, Telefone,
+	CPF ou CNPJ, Gênero e Pronome do Paciente e,
+	após verificar se o CPF do ainda não foi 
+	registado, ele adiciona o Paciente ao Banco
+	de Dados, mesmo ele ainda não tendo acesso ao
+	site(necessita validação do Email).
+*/
+
 delimiter $$
 CREATE PROCEDURE spRegistrarPaciente(
 	IN pNomeUser VARCHAR(70),
@@ -128,6 +139,16 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spRegistrarEspecialista, 
+	esta procedure pega Nome, Email, Senha, Telefone,
+	CPF ou CNPJ, CRP, Gênero e Pronome do Especialista 
+	e, após verificar se o CPF do ainda não foi 
+	registado, ele adiciona o Especialista ao Banco
+	de Dados, mesmo ele ainda não tendo acesso ao
+	site(necessita tanto da validação do Email quanto
+	da liberação da conta por meio de um Administrador).
+*/
 
 delimiter $$
 CREATE PROCEDURE spRegistrarEspecialista(
@@ -155,6 +176,13 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spAtivarEmail, esta
+	procedure pega o Id do Usuário e,após 
+	verificar que o Usuário existe, ele 
+	muda o campo 'StsVerificarEmail' para
+	verdadeiro.
+*/
 
 delimiter $$
 CREATE PROCEDURE spAtivarEmail(
@@ -176,9 +204,16 @@ GROUP BY(u.IdUser);
 END
 $$
 
+/*
+	Criação da Procedure spAtualizarInfoUsuario, esta
+	procedure pega o Id, Nome, Email, Telefone,
+	Gênero e Pronome do Usuário e, após verificar 
+	que o mesmo existe, ele atualiza algumas 
+	informações do usuário no Banco de Dados.
+*/
 
 delimiter $$
-CREATE PROCEDURE spAtualizarUsuario (
+CREATE PROCEDURE spAtualizarInfoUsuario (
 	IN IdUser BIGINT,
 	IN NomeUser VARCHAR(70),
 	IN EmailUser VARCHAR(100),
@@ -205,9 +240,15 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spAtualizarSenhaUsuario, esta
+	procedure pega o Id e Senha do Usuário e,
+	após verificar que o mesmo existe, ele 
+	atualiza a senha do usuário no Banco de Dados.
+*/
 
 delimiter $$
-CREATE PROCEDURE spAtualizarSenha (
+CREATE PROCEDURE spAtualizarSenhaUsuario (
 	IN pIdUser BIGINT,
 	IN pSenhaUser VARCHAR(100)
 )
@@ -226,9 +267,15 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spAtualizarImgUsuario, esta
+	procedure pega o Id e a Imagem do Usuário e, após
+	verificar que o mesmo existe, ele atualiza a 
+	imagem do usuário no Banco de Dados.
+*/
 
 delimiter $$
-CREATE PROCEDURE spAdicionarImgUsuario(
+CREATE PROCEDURE spAtualizarImgUsuario(
 	IN pIdUser BIGINT,
 	IN pImgUrlUser TEXT
 )
@@ -249,6 +296,12 @@ BEGIN
 END 
 $$
 
+/*
+	Criação da Procedure spExcluirUsuarios, esta
+	procedure pega o ID do Usuário e o exclui de
+	forma lógica, atualizando o campo 'StsAtivoUser'
+	para 'não'.
+*/
 
 delimiter $$
 CREATE PROCEDURE spExcluirUsuarios( 
@@ -261,6 +314,13 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spListarPacientes, esta 
+	procedure tem como objetivo representar todos 
+	os pacientes incluindo suas informações 
+	pessoais e dados formatados para melhor
+	entendimento do Administrador.
+*/
 
 delimiter $$
 CREATE PROCEDURE spListarPacientes()
@@ -278,6 +338,13 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spListarEspecialistasAtivos, esta 
+	procedure tem como objetivo representar todos 
+	os especialistas que já tem permissão do Administrador, 
+	incluindo suas informações pessoais e dados formatados 
+	para melhor entendimento do mesmo.
+*/
 
 delimiter $$
 CREATE PROCEDURE spListarEspecialistasAtivos()
@@ -297,6 +364,13 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spEspecialistasPendentes, esta 
+	procedure tem como objetivo representar todos os 
+	especialistas que necessitam a permissão de um
+	Adminstrador, incluindo suas informações 
+	pessoais e dados formatados para visualização.
+*/
 
 delimiter $$
 CREATE PROCEDURE spListarEspecialistasPendentes()
@@ -316,6 +390,13 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spListarUsuariosExcluidos, esta 
+	procedure tem como objetivo representar todos os 
+	usuários que forma exclúidos pelo Administrador,
+	incluindo suas informações(dos usuários) 
+	pessoais e dados formatados para visualização.
+*/
 
 delimiter $$
 CREATE PROCEDURE spListarUsuariosExcluidos()
@@ -331,6 +412,14 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spPegarUserEmail, esta
+	procedure pega o Email do Usuário e, após
+	verificar que o mesmo existe, ele exibe o Id,
+	Nome, EMail, Senha, Imagem, Gênero, Pronome,
+	a sua Regra, o Status de Verificação do Email
+	e o Status de Ativação do usuário.
+*/
 
 delimiter $$
 CREATE PROCEDURE spPegarUserEmail(
@@ -361,6 +450,12 @@ BEGIN
 END 
 $$
 
+/*
+	Criação da Procedure spPegarUserCpfOrCnpj, esta
+	procedure pega o CPF ou CNPJ do Usuário e, após
+	verificar que o mesmo existe, ele exibe o Id do
+	mesmo.
+*/
 
 delimiter $$
 CREATE PROCEDURE spPegarUserCpfOrCnpj(
@@ -382,6 +477,16 @@ BEGIN
 END 
 $$
 
+/*
+	Criação da Procedure spPegarUserId, esta
+	procedure pega o Id do Usuário e, após
+	verificar que o mesmo existe, ele exibe o Id,
+	Nome, EMail, CPF ou CNPJ, Telefone, CRP
+	(se o usuário for especialista), Imagem, 
+	Gênero, Pronome, a sua Regra, o Status de 
+	Verifição do Email e o Status de Ativação 
+	do usuário.
+*/
 
 delimiter $$
 CREATE PROCEDURE spPegarUserId(
@@ -414,6 +519,13 @@ BEGIN
 END 
 $$
 
+/*
+	Criação da Procedure spReativarUsuarios, esta
+	procedure pega o Id do Usuário e, após
+	verificar que o mesmo existe, ele Atualiza seu
+	Status de Ativação, revertendo a exclusão
+	lógica, caso necessário.
+*/
 
 delimiter $$
 CREATE PROCEDURE spReativarUsuarios(
@@ -426,6 +538,11 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spAtivarEspecialistas, esta
+	procedure pega o Id do Especialista e atualiza sua
+	Regra, tornando-o um 'Especialista Ativo'.
+*/
 
 delimiter $$
 CREATE PROCEDURE spAtivarEspecialistas(
@@ -438,6 +555,12 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spAdicionarExpediente, esta
+	procedure pega o Id, Data e Hora do Especialista 
+	e, após verificar que o mesmo existe, ele Adiciona 
+	seu Expediente no Banco de Dados.
+*/
 
 delimiter $$
 CREATE PROCEDURE spAdicionarExpediente (
@@ -460,6 +583,12 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spAtivarDesativarExpediente, esta
+	procedure pega o Id do Espcialista e o Id do Expediente
+	e, após verificar que o Especialista existe e está ativo,
+	ele Ativa(ou desativa)seu Expediente no Banco de Dados.
+*/
 
 delimiter $$
 CREATE PROCEDURE spAtivarDesativarExpediente(
@@ -494,6 +623,13 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spListarExpedientes, esta
+	procedure pega o Id do Especialista e, após 
+	verificar que o mesmo existe, ele Lista todos
+	os Expedientes disponíveis no Banco de Dados.
+*/
+
 delimiter $$
 CREATE PROCEDURE spListarExpedientes(
 	IN pIdUser BIGINT
@@ -520,6 +656,14 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spRegistrarConsulta, esta
+	procedure pega o Id do Paciente, o Id do Especialista,
+	a Data, a Hora e a Informação da Consulta e, após 
+	verificar que existe o Paciente, o Especialista e
+	o Expediente, ele Adiciona uma nova consulta no 
+	Banco de Dados(ainda necessita confirmação do Especialista).
+*/
 
 delimiter $$
 CREATE PROCEDURE spRegistrarConsulta(
@@ -566,6 +710,12 @@ BEGIN
 END 
 $$
 
+/*
+	Criação da Procedure spListarConsultasNaoConfirmadas,
+	esta procedure pega o Id do Especialista e, após 
+	verificar que o mesmo existe, ele Exibe todas
+	Consultas ainda não confirmadas pelo especialista.
+*/
 
 delimiter $$
 CREATE PROCEDURE spListarConsultasNaoConfirmadas(
@@ -598,6 +748,12 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spListarConsultasConfirmadasPorPaciente,
+	esta procedure pega o Id do Paciente e, após verificar que o
+	mesmo existe, ele Exibe todas Consultas confirmadas para o
+	Paciente.
+*/
 
 delimiter $$
 CREATE PROCEDURE spListarConsultasConfirmadasPorPaciente(
@@ -631,6 +787,13 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spAtivarConsulta, esta 
+	procedure pega o Id da Consulta e, após 
+	verificar que a mesma existe, ele Ativa a
+	consulta, mudando o campo 'Status de 
+	Ativação' para 'sim'.
+*/
 
 delimiter $$
 CREATE PROCEDURE spAtivarConsulta(
@@ -652,6 +815,13 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spAdicionarEvento, esta 
+	procedure pega o Id do Especialista, Nome, Data, 
+	Horário, Local, Informações e Imagem do Evento e
+	Adiciona um novo Evento, tanto na entidade 
+	'eventos' quanto na entidade 'usereventos'.
+*/
 
 DELIMITER $$
 CREATE PROCEDURE spAdicionarEvento(
@@ -676,6 +846,12 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spListarEventosAtivos, esta 
+	procedure exibe o Id, Nome, Data, Hora, Local, 
+	Informações e Imagem dos Eventos ativos, além do Nome do 
+	Especialista associado.
+*/
 
 delimiter $$
 CREATE PROCEDURE spListarEventosAtivos()
@@ -696,9 +872,15 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spListarEventosDesativos, esta 
+	procedure exibe o Id, Nome, Data, Hora, Local, 
+	Informações e Imagem dos Eventos desativos, além do Nome do 
+	Especialista associado.
+*/
 
 delimiter $$
-CREATE PROCEDURE spListarEventosPendentes()
+CREATE PROCEDURE spListarEventosDesativos()
 BEGIN
 	SELECT e.IdEvento,
 			 e.NomeEvento,
@@ -716,6 +898,12 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spListarTodosEventos, esta 
+	procedure exibe o Id, Nome, Data, Hora, Local, 
+	Informações e Imagem do Evento, além do Nome e 
+	o CRP do Especialista associado.
+*/
 
 delimiter $$
 CREATE PROCEDURE spListarTodosEventos()
@@ -736,6 +924,11 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spDesativarEvento, esta 
+	procedure Desativa um Evento quando o mesmo 
+	não for necessário.
+*/
 
 delimiter $$
 CREATE PROCEDURE spDesativarEvento(
@@ -748,6 +941,10 @@ BEGIN
 END
 $$
 
+/*
+	Criação da Procedure spAtivarEvento, esta 
+	procedure Ativa um Evento se necessário.
+*/
 
 delimiter $$
 CREATE PROCEDURE spAtivarEvento(
@@ -758,6 +955,34 @@ BEGIN
 	SET StsAtivoEvento = 's'
 	WHERE IdEvento = pIdEvento;
 END
+$$
+
+/*
+	Criação da Procedure spAtualizarImgEvento, esta
+	procedure pega o Id e a Imagem do Evento e, após
+	verificar que o mesmo existe, ele atualiza a 
+	imagem do evento no Banco de Dados.
+*/
+
+delimiter $$
+CREATE PROCEDURE spAtualizarImgEvento(
+	IN pIdEvento BIGINT,
+	IN pImgUrlEvento TEXT
+)
+BEGIN
+	DECLARE vIdEvento BIGINT DEFAULT 0;
+	
+	SELECT if(COUNT(e.IdEvento) <> 1, 0, e.IdEvento) INTO vIdEvento
+	FROM eventos e
+	WHERE pIdEvento = e.IdEvento
+	GROUP BY(e.IdEvento);
+	
+	if vIdEvento = pIdEvento then
+		UPDATE eventos 
+		SET ImgUrlEvento = pImgUrlEvento
+		WHERE IdEvento = vIdEvento;
+	END if;
+END 
 $$
 
 
@@ -970,20 +1195,23 @@ FROM users u
 WHERE u.StsAtivoUser = 'n';
 
 /*
-	Criação da view vwExpedientes, esta view tem como objetivo 
-	representar todos os expedientes de todos os especialistas.
+	Criação da view vwUsuarios_Com_Emails_Pendentes, esta view tem 
+	como objetivo exibir os usuários com emaisl pendentes, incluindo 
+	suas informações pessoais e dados formatados para visualização.
 */
 
-CREATE VIEW vwExpedientes AS 
-SELECT e.IdExpediente AS 'Id do Expediente',
-		 u.NomeUser AS 'Nome do Especialista',
-		 e.DtExpediente AS 'Data do Expediente',
-		 e.HrExpediente AS 'Hora do Expediente',
-		 e.StsAtivoExpediente AS 'Status do Expediente'
-FROM expediente e JOIN users u
-						ON e.IdUser = u.IdUser
-ORDER BY e.DtExpediente ASC,
-			e.HrExpediente ASC;
+CREATE VIEW vwUsuarios_Com_Emails_Pendentes AS
+SELECT u.IdUser AS 'ID do Usuário',
+		 u.NomeUser AS 'Nome do Usuário',
+		 u.EmailUser AS 'Email do Usuário',
+		 sfFormatarTel(u.TelUser) AS 'Telefone do Usuário',
+		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Usuário',
+		 sfFormatarCrp(u.CrpUser) AS 'CRP do Usuário',
+		 u.GenUser AS 'Gênero do Usuário',
+		 u.PronomeUser AS 'Pronome do Usuário'
+FROM users u
+WHERE u.StsVerificarEmail = FALSE
+OR u.StsVerificarEmail IS FALSE;
 	
 /*
 	Criação da view vwConsultas_Nao_Confirmadas, esta view tem como objetivo 
@@ -993,7 +1221,7 @@ ORDER BY e.DtExpediente ASC,
 			
 CREATE VIEW vwConsultas_Nao_Confirmadas AS	
 SELECT c.IdConsulta AS 'Id da Consulta',
-		 pac.NomeUser 'Nome do Paciente',
+		 pac.NomeUser AS 'Nome do Paciente',
 		 pac.EmailUser AS 'Email do Paciente',
 		 esp.NomeUser AS 'Nome do Especialista',
 		 c.DtConsulta AS 'Data da Consulta',
@@ -1024,3 +1252,113 @@ SELECT c.IdConsulta AS 'Id da Consulta',
 							JOIN users esp
 							ON c.IdEspecialista = esp.IdUser
 		WHERE c.StsAtivoConsulta = 's';
+
+/*
+	Criação da view vwTodos_Expedientes, esta view tem como objetivo 
+	representar todos os expedientes de todos os especialistas.
+*/
+
+CREATE VIEW vwTodos_Expedientes AS 
+SELECT e.IdExpediente AS 'Id do Expediente',
+		 u.NomeUser AS 'Nome do Especialista',
+		 e.DtExpediente AS 'Data do Expediente',
+		 e.HrExpediente AS 'Hora do Expediente',
+		 e.StsAtivoExpediente AS 'Status do Expediente'
+FROM expediente e JOIN users u
+						ON e.IdUser = u.IdUser
+ORDER BY e.DtExpediente ASC,
+			e.HrExpediente ASC;		
+		
+/*
+	Criação da view vwExpedientes_Ativos, esta view tem como objetivo 
+	representar todos os expedientes ativos de todos os especialistas.
+*/		
+
+CREATE VIEW vwExpedientes_Ativos AS 
+SELECT e.IdExpediente AS 'Id do Expediente',
+		 u.NomeUser AS 'Nome do Especialista',
+		 e.DtExpediente AS 'Data do Expediente',
+		 e.HrExpediente AS 'Hora do Expediente'
+FROM expediente e JOIN users u
+						ON e.IdUser = u.IdUser
+WHERE e.StsAtivoExpediente = 's'
+ORDER BY e.DtExpediente ASC,
+			e.HrExpediente ASC;
+
+/*
+	Criação da view vwExpedientes_Nao_Ativos, esta view tem como objetivo 
+	representar todos os expedientes não ativos de todos os especialistas.
+*/
+
+CREATE VIEW vwExpedientes_Nao_Ativos AS 
+SELECT e.IdExpediente AS 'Id do Expediente',
+		 u.NomeUser AS 'Nome do Especialista',
+		 e.DtExpediente AS 'Data do Expediente',
+		 e.HrExpediente AS 'Hora do Expediente'
+FROM expediente e JOIN users u
+						ON e.IdUser = u.IdUser
+WHERE e.StsAtivoExpediente = 'n'
+ORDER BY e.DtExpediente ASC,
+			e.HrExpediente ASC;
+
+/*
+	Criação da view vwTodos_Eventos, esta view tem como objetivo 
+	representar todos os eventos, de modo geral.
+*/
+
+CREATE VIEW vwTodos_Eventos AS	
+SELECT e.IdEvento AS 'Id do Evento',
+		 e.NomeEvento AS  'Nome do Evento',
+		 esp.NomeUser AS 'Nome do Especialista',
+		 esp.EmailUser AS 'Email do Especialista',
+		 e.DtEvento AS 'Data do Evento',
+		 e.HrEvento AS 'Hora do Evento',
+		 e.LocalEvento AS 'Local do Evento',
+		 e.InfoEvento AS 'Informações do Evento',
+		 e.ImgUrlEvento AS 'Imagem do Evento'
+		FROM usereventos ue JOIN users esp
+							ON ue.IdUser = esp.IdUser
+							JOIN eventos e
+							ON ue.IdEvento = e.IdEvento;
+					
+/*
+	Criação da view vwEventos_Nao_Ativos, esta view tem como objetivo 
+	representar os eventos não ativos.
+*/
+
+CREATE VIEW vwEventos_Nao_Ativos AS	
+SELECT e.IdEvento AS 'Id do Evento',
+		 e.NomeEvento AS  'Nome do Evento',
+		 esp.NomeUser AS 'Nome do Especialista',
+		 esp.EmailUser AS 'Email do Especialista',
+		 e.DtEvento AS 'Data do Evento',
+		 e.HrEvento AS 'Hora do Evento',
+		 e.LocalEvento AS 'Local do Evento',
+		 e.InfoEvento AS 'Informações do Evento',
+		 e.ImgUrlEvento AS 'Imagem do Evento'
+		FROM usereventos ue JOIN users esp
+							ON ue.IdUser = esp.IdUser
+							JOIN eventos e
+							ON ue.IdEvento = e.IdEvento
+		WHERE e.StsAtivoEvento = 'n';
+		
+/*
+	Criação da view vwEventos_Ativos, esta view tem como objetivo 
+	representar os eventos ativos.
+*/	
+		
+CREATE VIEW vwEventos_Ativos AS	
+SELECT e.IdEvento AS 'Id do Evento',
+		 e.NomeEvento AS  'Nome do Evento',
+		 esp.NomeUser AS 'Nome do Especialista',
+		 esp.EmailUser AS 'Email do Especialista',
+		 e.DtEvento AS 'Data do Evento',
+		 e.HrEvento AS 'Hora do Evento',
+		 e.LocalEvento AS 'Local do Evento',
+		 e.InfoEvento AS 'Informações do Evento',
+		 e.ImgUrlEvento AS 'Imagem do Evento'
+		FROM usereventos ue JOIN users esp
+							ON ue.IdUser = esp.IdUser
+							JOIN eventos e
+							ON ue.IdEvento = e.IdEvento
+		WHERE e.StsAtivoEvento = 's';
