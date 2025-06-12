@@ -41,7 +41,8 @@ CREATE TABLE if NOT EXISTS consultas(
 IdConsulta BIGINT AUTO_INCREMENT PRIMARY KEY,
 IdPaciente BIGINT,
 IdEspecialista BIGINT,
-DtConsulta DATE NOT NULL,
+DtConsulta SMALLINT NOT NULL,
+DiaSemanaConsulta SMALLINT NOT NULL,
 HrConsulta TIME NOT NULL,
 InfoConsulta TEXT,
 StsAtivoConsulta CHAR(1) NOT NULL DEFAULT 'n',
@@ -58,8 +59,9 @@ FOREIGN KEY(IdEspecialista) REFERENCES users(IdUser)
 CREATE TABLE if NOT EXISTS expediente(
 IdExpediente BIGINT AUTO_INCREMENT PRIMARY KEY,
 IdUser BIGINT,
-DtExpediente DATE NOT NULL,
-HrExpediente TIME NOT NULL,
+DtExpediente SMALLINT NOT NULL,
+HrInicioExpediente TIME NOT NULL,
+HrFinalExpediente TIME NOT NULL,
 StsAtivoExpediente CHAR(1) NOT NULL DEFAULT 's',
 FOREIGN KEY(IdUser) REFERENCES users(IdUser)
 );
@@ -565,20 +567,22 @@ $$
 delimiter $$
 CREATE PROCEDURE spAdicionarExpediente (
 	IN pIdUser BIGINT,
-	IN pDtExpediente DATE,
-	IN pHrExpediente TIME
+	IN pDtExpediente SMALLINT,
+	IN pHrInicioExpediente TIME,
+	IN pHrFinalExpediente TIME
 )
 BEGIN
 	DECLARE vIdUser BIGINT DEFAULT 0;
 	SELECT if(COUNT(u.IdUser) <> 1,0, u.IdUser) INTO vIdUser
 	FROM users u
 	WHERE pIdUser = u.IdUser
-	AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMIN')
 	GROUP BY(u.IdUser);
 	
 	if vIdUser = pIdUser then
-		INSERT INTO expediente (IdUser, DtExpediente, HrExpediente)
-		VALUES(pIdUser, pDtExpediente, pHrExpediente);
+		INSERT INTO expediente (IdUser, DtExpediente, HrInicioExpediente, HrFinalExpediente)
+		VALUES(pIdUser, pDtExpediente, pHrInicioExpediente, pHrFinalExpediente);
 	END if;
 END
 $$
@@ -602,7 +606,8 @@ BEGIN
 	SELECT if(COUNT(u.IdUser) <> 1,0, u.IdUser) INTO vIdUser
 	FROM users u
 	WHERE pIdUser = u.IdUser
-	AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMIN')
 	GROUP BY(u.IdUser);
 	
 	SELECT e.StsAtivoExpediente INTO vStsAtivoExpediente
@@ -640,18 +645,20 @@ BEGIN
 	SELECT if(COUNT(u.IdUser) <> 1, 0 , u.IdUser) INTO vIdUser
 	FROM users u
 	WHERE pIduser = u.IdUser
-	AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMIN')
 	GROUP BY(u.IdUser);
 	
 	if vIdUser = pIdUser then
 		SELECT e.IdExpediente,
 			 	 e.DtExpediente,
-			 	 e.HrExpediente
+			 	 e.HrInicioExpediente,
+			 	 e.HrFinalExpediente
 		FROM expediente e JOIN users u
 								ON e.IdUser = u.IdUser
 		WHERE e.IdUser = vIdUser
 		ORDER BY e.DtExpediente ASC,
-					e.HrExpediente ASC;
+					e.HrInicioExpediente ASC;
 	END if;
 END
 $$
@@ -666,10 +673,10 @@ $$
 */
 
 delimiter $$
-CREATE PROCEDURE spRegistrarConsulta(
+CREATE PROCEDURE spAdicionarConsulta(
 	IN pIdPaciente BIGINT,
 	IN pIdEspecialista BIGINT,
-	IN pDtConsulta DATE,
+	IN pDiaSemanaConsulta SMALLINT,
 	IN pHrConsulta TIME,
 	IN pInfoConsluta TEXT
 )
@@ -681,7 +688,8 @@ BEGIN
 	FROM users u
 	WHERE pIdPaciente = u.IdUser
 	AND u.StsAtivoUser = 's'
-	AND u.RulesUser = 'RULE_PACIENTE'
+	AND (u.RulesUser = 'RULE_PACIENTE'
+	OR u.RulesUser = 'RULE_ADMIN')
 	GROUP BY(u.IdUser);
 	
 	if vIdPaciente = pIdPaciente then
@@ -689,7 +697,8 @@ BEGIN
 		FROM users u
 		WHERE pIdEspecialista = u.IdUser
 		AND u.StsAtivoUser = 's'
-		AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+		AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+		OR u.RulesUser = 'RULE_ADMIN')
 		GROUP BY(u.IdUser);
 	END if;
 	
@@ -697,15 +706,16 @@ BEGIN
 		SELECT if(COUNT(e.IdUser) <> 1, 0 , e.IdUser) INTO vIdEspecialista
 		FROM expediente e
 		WHERE pIdEspecialista = e.IdUser
-		AND pDtConsulta = e.DtExpediente
-		AND pHrConsulta = e.HrExpediente
+		AND pDiaSemanaConsulta = e.DtExpediente
+		AND pHrConsulta >= e.HrInicioExpediente
+		AND pHrConsulta <= e.HrFinalExpediente
 		AND e.StsAtivoExpediente = 's'
 		GROUP BY(e.IdUser);
 	END if;
 	
 	if vIdEspecialista = pIdEspecialista then
-		INSERT INTO consultas(IdPaciente, IdEspecialista, DtConsulta, HrConsulta, InfoConsulta)
-		VALUES (pIdPaciente, pIdEspecialista, pDtConsulta, pHrConsulta, pInfoConsluta);
+		INSERT INTO consultas(IdPaciente, IdEspecialista, DtConsulta, DiaSemanaConsulta, HrConsulta, InfoConsulta)
+		VALUES (pIdPaciente, pIdEspecialista, CURDATE(), pDiaSemanaConsulta, pHrConsulta, pInfoConsluta);
 	END if;
 END 
 $$
@@ -728,7 +738,8 @@ BEGIN
 	FROM users u
 	WHERE pIdEspecialista = u.IdUser
 	AND u.StsAtivoUser = 's'
-	AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMIN')
 	GROUP BY(u.IdUser);
 	
 	if vIdEspecialista = pIdEspecialista then
@@ -1095,22 +1106,52 @@ $$
 
 
 /*
-	Criação da trigger trDesativarExpedienteAposConsulta, esta trigger tem 
-	como objetivo atualizar automaticamente o expediente do especialista 
-	para 'inativa' após o paciente marcar uma consulta.
+	Criação da trigger trg_AjustarExpedienteAposConsulta, esta trigger tem 
+	como objetivo atualizar automaticamente o expediente do especialista, 
+	alterando sua hora e/ou status, após o paciente marcar uma consulta.
 */
 
 delimiter $$
-CREATE TRIGGER trDesativarExpedienteAposConsulta
+CREATE TRIGGER trg_AjustarExpedienteAposConsulta
 AFTER INSERT ON consultas
 FOR EACH ROW
 BEGIN
-	UPDATE expediente
-	SET StsAtivoExpediente = 'n'
-   WHERE IdUser = NEW.IdEspecialista
-   AND DtExpediente = NEW.DtConsulta
-   AND HrExpediente = NEW.HrConsulta;
-END
+    DECLARE v_IdExpediente BIGINT;
+    DECLARE v_HrInicioExpediente TIME;
+    DECLARE v_HrFinalExpediente TIME;
+    DECLARE v_DiaDaSemana SMALLINT;
+    DECLARE v_HrFimConsulta TIME;
+    SET v_DiaDaSemana = NEW.DiaSemanaConsulta;
+    SET v_HrFimConsulta = ADDTIME(NEW.HrConsulta, '01:00:00');
+
+    SELECT 
+        IdExpediente, HrInicioExpediente, HrFinalExpediente
+    INTO 
+        v_IdExpediente, v_HrInicioExpediente, v_HrFinalExpediente
+    FROM 
+        expediente
+    WHERE 
+        IdUser = NEW.IdEspecialista
+        AND DtExpediente = v_DiaDaSemana
+        AND NEW.HrConsulta >= HrInicioExpediente
+        AND v_HrFimConsulta <= HrFinalExpediente
+        AND StsAtivoExpediente = 's'
+    LIMIT 1;
+
+    IF v_IdExpediente IS NOT NULL THEN
+        IF NEW.HrConsulta = v_HrInicioExpediente AND v_HrFimConsulta = v_HrFinalExpediente THEN
+            UPDATE expediente SET StsAtivoExpediente = 'n' WHERE IdExpediente = v_IdExpediente;
+        ELSEIF NEW.HrConsulta = v_HrInicioExpediente THEN
+            UPDATE expediente SET HrInicioExpediente = v_HrFimConsulta WHERE IdExpediente = v_IdExpediente;
+        ELSEIF v_HrFimConsulta = v_HrFinalExpediente THEN
+            UPDATE expediente SET HrFinalExpediente = NEW.HrConsulta WHERE IdExpediente = v_IdExpediente;
+        ELSE
+            UPDATE expediente SET HrFinalExpediente = NEW.HrConsulta WHERE IdExpediente = v_IdExpediente;
+            INSERT INTO expediente (IdUser, DtExpediente, HrInicioExpediente, HrFinalExpediente, StsAtivoExpediente)
+            VALUES (NEW.IdEspecialista, v_DiaDaSemana, v_HrFimConsulta, v_HrFinalExpediente, 's');
+        END IF;
+    END IF;
+END 
 $$
 
 
@@ -1262,7 +1303,8 @@ CREATE VIEW vwTodos_Expedientes AS
 SELECT e.IdExpediente AS 'Id do Expediente',
 		 u.NomeUser AS 'Nome do Especialista',
 		 e.DtExpediente AS 'Data do Expediente',
-		 e.HrExpediente AS 'Hora do Expediente',
+		 e.HrInicioExpediente AS 'Hora Inicial do Expediente',
+		 e.HrFinalExpediente AS 'Hora Final do Expediente',
 		 e.StsAtivoExpediente AS 'Status do Expediente'
 FROM expediente e JOIN users u
 						ON e.IdUser = u.IdUser
@@ -1278,7 +1320,8 @@ CREATE VIEW vwExpedientes_Ativos AS
 SELECT e.IdExpediente AS 'Id do Expediente',
 		 u.NomeUser AS 'Nome do Especialista',
 		 e.DtExpediente AS 'Data do Expediente',
-		 e.HrExpediente AS 'Hora do Expediente'
+		 e.HrInicioExpediente AS 'Hora Inicial do Expediente',
+		 e.HrFinalExpediente AS 'Hora Final do Expediente'
 FROM expediente e JOIN users u
 						ON e.IdUser = u.IdUser
 WHERE e.StsAtivoExpediente = 's'
@@ -1294,7 +1337,8 @@ CREATE VIEW vwExpedientes_Nao_Ativos AS
 SELECT e.IdExpediente AS 'Id do Expediente',
 		 u.NomeUser AS 'Nome do Especialista',
 		 e.DtExpediente AS 'Data do Expediente',
-		 e.HrExpediente AS 'Hora do Expediente'
+		 e.HrInicioExpediente AS 'Hora Inicial do Expediente',
+		 e.HrFinalExpediente AS 'Hora Final do Expediente'
 FROM expediente e JOIN users u
 						ON e.IdUser = u.IdUser
 WHERE e.StsAtivoExpediente = 'n'
@@ -1362,3 +1406,4 @@ SELECT e.IdEvento AS 'Id do Evento',
 							JOIN eventos e
 							ON ue.IdEvento = e.IdEvento
 		WHERE e.StsAtivoEvento = 's';
+		
