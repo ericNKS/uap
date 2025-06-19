@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import fastify from "fastify";
 import multipart from '@fastify/multipart';
-import { PrivateRoute, AdminRoute, PublicRoute } from "./routes/Api";
+import { PrivateRoute, AdminRoute, PublicRoute, EspecialistaRoute } from "./routes/Api";
 import { Database } from './config/database/Database';
 import dotenv from 'dotenv';
 
@@ -37,6 +37,7 @@ app.register(multipart, {
 });
 app.register(PrivateRoute);
 app.register(AdminRoute);
+app.register(EspecialistaRoute);
 app.register(PublicRoute);
 
 const start = async () => {
