@@ -216,12 +216,12 @@ $$
 
 delimiter $$
 CREATE PROCEDURE spAtualizarInfoUsuario (
-	IN IdUser BIGINT,
-	IN NomeUser VARCHAR(70),
-	IN EmailUser VARCHAR(100),
-	IN TelUser VARCHAR(20),
-	IN GenUser VARCHAR(30),
-	IN PronomeUser VARCHAR(10)
+	IN pIdUser BIGINT,
+	IN pNomeUser VARCHAR(70),
+	IN pEmailUser VARCHAR(100),
+	IN pTelUser VARCHAR(20),
+	IN pGenUser VARCHAR(30),
+	IN pPronomeUser VARCHAR(10)
 )
 BEGIN
 	DECLARE vIdUser BIGINT DEFAULT 0;
@@ -676,6 +676,7 @@ delimiter $$
 CREATE PROCEDURE spAdicionarConsulta(
 	IN pIdPaciente BIGINT,
 	IN pIdEspecialista BIGINT,
+	IN pDtConsulta DATE,
 	IN pDiaSemanaConsulta SMALLINT,
 	IN pHrConsulta TIME,
 	IN pInfoConsluta TEXT
@@ -715,7 +716,7 @@ BEGIN
 	
 	if vIdEspecialista = pIdEspecialista then
 		INSERT INTO consultas(IdPaciente, IdEspecialista, DtConsulta, DiaSemanaConsulta, HrConsulta, InfoConsulta)
-		VALUES (pIdPaciente, pIdEspecialista, CURDATE(), pDiaSemanaConsulta, pHrConsulta, pInfoConsluta);
+		VALUES (pIdPaciente, pIdEspecialista, pDtConsulta, pDiaSemanaConsulta, pHrConsulta, pInfoConsluta);
 	END if;
 END 
 $$
@@ -799,6 +800,46 @@ END
 $$
 
 /*
+	Criação da Procedure spListarConsultasConfirmadasPorEspecialista,
+	esta procedure pega o Id do Especialista e, após verificar que o
+	mesmo existe, ele Exibe todas Consultas confirmadas para o
+	Especialista.
+*/
+
+delimiter $$
+CREATE PROCEDURE spListarConsultasConfirmadasPorEspecialista(
+	IN pIdEspecialista BIGINT
+)
+BEGIN
+	DECLARE vIdEspecialista BIGINT DEFAULT 0;
+	
+	SELECT if(COUNT(u.IdUser) <> 1, 0 , u.IdUser) INTO vIdEspecialista
+	FROM users u
+	WHERE pIdEspecialista = u.IdUser
+	AND u.StsAtivoUser = 's'
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMINISTRADOR') 
+	GROUP BY(u.IdUser);
+	
+	if vIdEspecialista = pIdEspecialista then
+		SELECT c.IdConsulta,
+				 pac.NomeUser,
+				 pac.EmailUser,
+				 c.DtConsulta,
+				 c.DiaSemanaConsulta,
+				 c.HrConsulta,
+				 c.InfoConsulta
+		FROM consultas c JOIN users pac
+							  ON c.IdPaciente = pac.IdUser
+							  JOIN users esp
+							  ON c.IdEspecialista = esp.IdUser					
+		WHERE c.StsAtivoConsulta = 's'
+		AND pIdEspecialista = esp.IdUser;
+	END if;
+END
+$$
+
+/*
 	Criação da Procedure spAtivarConsulta, esta 
 	procedure pega o Id da Consulta e, após 
 	verificar que a mesma existe, ele Ativa a
@@ -821,6 +862,34 @@ BEGIN
 	if vIdConsulta = pIdConsulta then
 		UPDATE consultas
 		SET StsAtivoConsulta = 's'
+		WHERE IdConsulta = vIdConsulta;
+	END if;
+END
+$$
+
+/*
+	Criação da Procedure spDesativarConsulta, esta 
+	procedure pega o Id da Consulta e, após 
+	verificar que a mesma existe, ele Desativa a
+	consulta, mudando o campo 'Status de 
+	Ativação' para 'não'.
+*/
+
+delimiter $$
+CREATE PROCEDURE spDesativarConsulta(
+	IN pIdConsulta BIGINT
+)
+BEGIN
+	DECLARE vIdConsulta BIGINT DEFAULT 0;
+	
+	SELECT if(COUNT(c.IdConsulta) <> 1, 0 , c.IdConsulta) INTO vIdConsulta
+	FROM consultas c
+	WHERE pIdConsulta = c.IdConsulta
+	GROUP BY(c.IdConsulta);
+	
+	if vIdConsulta = pIdConsulta then
+		UPDATE consultas
+		SET StsAtivoConsulta = 'n'
 		WHERE IdConsulta = vIdConsulta;
 	END if;
 END
@@ -1098,60 +1167,6 @@ BEGIN
 
     RETURN Resultado;
 END
-$$
-
-
-
--- Criação das Triggers
-
-
-/*
-	Criação da trigger trg_AjustarExpedienteAposConsulta, esta trigger tem 
-	como objetivo atualizar automaticamente o expediente do especialista, 
-	alterando sua hora e/ou status, após o paciente marcar uma consulta.
-*/
-
-delimiter $$
-CREATE TRIGGER trg_AjustarExpedienteAposConsulta
-AFTER INSERT ON consultas
-FOR EACH ROW
-BEGIN
-    DECLARE v_IdExpediente BIGINT;
-    DECLARE v_HrInicioExpediente TIME;
-    DECLARE v_HrFinalExpediente TIME;
-    DECLARE v_DiaDaSemana SMALLINT;
-    DECLARE v_HrFimConsulta TIME;
-    SET v_DiaDaSemana = NEW.DiaSemanaConsulta;
-    SET v_HrFimConsulta = ADDTIME(NEW.HrConsulta, '01:00:00');
-
-    SELECT 
-        IdExpediente, HrInicioExpediente, HrFinalExpediente
-    INTO 
-        v_IdExpediente, v_HrInicioExpediente, v_HrFinalExpediente
-    FROM 
-        expediente
-    WHERE 
-        IdUser = NEW.IdEspecialista
-        AND DtExpediente = v_DiaDaSemana
-        AND NEW.HrConsulta >= HrInicioExpediente
-        AND v_HrFimConsulta <= HrFinalExpediente
-        AND StsAtivoExpediente = 's'
-    LIMIT 1;
-
-    IF v_IdExpediente IS NOT NULL THEN
-        IF NEW.HrConsulta = v_HrInicioExpediente AND v_HrFimConsulta = v_HrFinalExpediente THEN
-            UPDATE expediente SET StsAtivoExpediente = 'n' WHERE IdExpediente = v_IdExpediente;
-        ELSEIF NEW.HrConsulta = v_HrInicioExpediente THEN
-            UPDATE expediente SET HrInicioExpediente = v_HrFimConsulta WHERE IdExpediente = v_IdExpediente;
-        ELSEIF v_HrFimConsulta = v_HrFinalExpediente THEN
-            UPDATE expediente SET HrFinalExpediente = NEW.HrConsulta WHERE IdExpediente = v_IdExpediente;
-        ELSE
-            UPDATE expediente SET HrFinalExpediente = NEW.HrConsulta WHERE IdExpediente = v_IdExpediente;
-            INSERT INTO expediente (IdUser, DtExpediente, HrInicioExpediente, HrFinalExpediente, StsAtivoExpediente)
-            VALUES (NEW.IdEspecialista, v_DiaDaSemana, v_HrFimConsulta, v_HrFinalExpediente, 's');
-        END IF;
-    END IF;
-END 
 $$
 
 
