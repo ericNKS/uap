@@ -41,7 +41,7 @@ CREATE TABLE if NOT EXISTS consultas(
 IdConsulta BIGINT AUTO_INCREMENT PRIMARY KEY,
 IdPaciente BIGINT,
 IdEspecialista BIGINT,
-DtConsulta SMALLINT NOT NULL,
+DtConsulta DATE NOT NULL,
 DiaSemanaConsulta SMALLINT NOT NULL,
 HrConsulta TIME NOT NULL,
 InfoConsulta TEXT,
@@ -651,7 +651,7 @@ BEGIN
 	
 	if vIdUser = pIdUser then
 		SELECT e.IdExpediente,
-			 	 e.DtExpediente,
+			 	 sfFormatarDiaSemana(e.DtExpediente) AS 'DtExpediente',
 			 	 e.HrInicioExpediente,
 			 	 e.HrFinalExpediente
 		FROM expediente e JOIN users u
@@ -748,6 +748,7 @@ BEGIN
 				 pac.NomeUser,
 				 pac.EmailUser,
 				 c.DtConsulta,
+			 	 sfFormatarDiaSemana(c.DiaSemanaConsulta) AS 'DiaSemanaConsulta',
 				 c.HrConsulta,
 				 esp.NomeUser,
 				 c.InfoConsulta
@@ -786,6 +787,7 @@ BEGIN
 				 pac.NomeUser,
 				 pac.EmailUser,
 				 c.DtConsulta,
+			 	 sfFormatarDiaSemana(c.DiaSemanaConsulta) AS 'DiaSemanaConsulta',
 				 c.HrConsulta,
 				 esp.NomeUser,
 				 c.InfoConsulta
@@ -826,7 +828,7 @@ BEGIN
 				 pac.NomeUser,
 				 pac.EmailUser,
 				 c.DtConsulta,
-				 c.DiaSemanaConsulta,
+			 	 sfFormatarDiaSemana(c.DiaSemanaConsulta) AS 'DiaSemanaConsulta',
 				 c.HrConsulta,
 				 c.InfoConsulta
 		FROM consultas c JOIN users pac
@@ -1169,6 +1171,37 @@ BEGIN
 END
 $$
 
+/*
+	Criação da função sfFormatarDiaSemana, esta função tem como objetivo 
+	formatar automaticamente os dias da semana que são do tipo smallint.
+	Ex:  0 = 'Segunda-feira'; 6 = 'Domingo'. 
+*/
+
+delimiter $$
+
+CREATE FUNCTION sfFormatarDiaSemana(
+	pDiaSemana SMALLINT
+)
+RETURNS VARCHAR(20)
+DETERMINISTIC
+BEGIN
+   DECLARE vNomeDia VARCHAR(20);
+
+   CASE pDiaSemana
+   	WHEN 0 THEN SET vNomeDia = 'Segunda-feira';
+   	WHEN 1 THEN SET vNomeDia = 'Terça-feira';
+   	WHEN 2 THEN SET vNomeDia = 'Quarta-feira';
+   	WHEN 3 THEN SET vNomeDia = 'Quinta-feira';
+   	WHEN 4 THEN SET vNomeDia = 'Sexta-feira';
+   	WHEN 5 THEN SET vNomeDia = 'Sábado';
+   	WHEN 6 THEN SET vNomeDia = 'Domingo';
+   	ELSE SET vNomeDia = 'Dia Inválido';
+   	END CASE;
+   	
+   RETURN vNomeDia;
+END
+$$
+
 
 
 -- Criação das Views
@@ -1281,6 +1314,7 @@ SELECT c.IdConsulta AS 'Id da Consulta',
 		 pac.EmailUser AS 'Email do Paciente',
 		 esp.NomeUser AS 'Nome do Especialista',
 		 c.DtConsulta AS 'Data da Consulta',
+		 sfFormatarDiaSemana(c.DiaSemanaConsulta) AS 'Dia da Semana da Consulta',
 		 c.HrConsulta AS 'Hora da Consulta',
 		 c.InfoConsulta AS 'Info da Consulta'
 		FROM consultas c JOIN users pac
@@ -1301,6 +1335,7 @@ SELECT c.IdConsulta AS 'Id da Consulta',
 		 pac.EmailUser AS 'Email do Paciente',
 		 esp.NomeUser AS 'Nome do Especialista',
 		 c.DtConsulta AS 'Data da Consulta',
+		 sfFormatarDiaSemana(c.DiaSemanaConsulta) AS 'Dia da Semana da Consulta',
 		 c.HrConsulta AS 'Hora da Consulta',
 		 c.InfoConsulta AS 'Info da Consulta'
 		FROM consultas c JOIN users pac
@@ -1317,7 +1352,7 @@ SELECT c.IdConsulta AS 'Id da Consulta',
 CREATE VIEW vwTodos_Expedientes AS 
 SELECT e.IdExpediente AS 'Id do Expediente',
 		 u.NomeUser AS 'Nome do Especialista',
-		 e.DtExpediente AS 'Data do Expediente',
+		 sfFormatarDiaSemana(e.DtExpediente) AS 'Dia da Semana do Expediente',
 		 e.HrInicioExpediente AS 'Hora Inicial do Expediente',
 		 e.HrFinalExpediente AS 'Hora Final do Expediente',
 		 e.StsAtivoExpediente AS 'Status do Expediente'
@@ -1334,7 +1369,7 @@ ORDER BY e.DtExpediente ASC,
 CREATE VIEW vwExpedientes_Ativos AS 
 SELECT e.IdExpediente AS 'Id do Expediente',
 		 u.NomeUser AS 'Nome do Especialista',
-		 e.DtExpediente AS 'Data do Expediente',
+		 sfFormatarDiaSemana(e.DtExpediente) AS 'Dia da Semana do Expediente',
 		 e.HrInicioExpediente AS 'Hora Inicial do Expediente',
 		 e.HrFinalExpediente AS 'Hora Final do Expediente'
 FROM expediente e JOIN users u
@@ -1351,7 +1386,7 @@ ORDER BY e.DtExpediente ASC,
 CREATE VIEW vwExpedientes_Nao_Ativos AS 
 SELECT e.IdExpediente AS 'Id do Expediente',
 		 u.NomeUser AS 'Nome do Especialista',
-		 e.DtExpediente AS 'Data do Expediente',
+		 sfFormatarDiaSemana(e.DtExpediente) AS 'Dia da Semana do Expediente',
 		 e.HrInicioExpediente AS 'Hora Inicial do Expediente',
 		 e.HrFinalExpediente AS 'Hora Final do Expediente'
 FROM expediente e JOIN users u
