@@ -1,17 +1,17 @@
 export default class Expediente {
-    public IdExpediente: number = 0;
-    public IdUser: number = 0
+    public Idexpediente: number = 0;
     public DtExpediente: Date = new Date();
-    public HrExpedienteInicio: string = '';
-    public HrExpedienteFinal: string = '';
+    public Hrexpediente: string = '';
+    public Stsativoexpediente: string = 's';
+    public Iduser: number = 0
 
     public toJson(): Record<string, any> {
         return {
-            IdExpediente: this.IdExpediente,
-            IdUser: this.IdUser,
-            DtExpediente: this.DtExpediente,
-            HrExpedienteInicio: this.HrExpedienteInicio,
-            HrExpedienteFinal: this.HrExpedienteFinal,
+            Idexpediente: this.Idexpediente,
+            DtExpediente: this.DtExpediente.toISOString(),
+            Hrexpediente: this.Hrexpediente,
+            Stsativoexpediente: this.Stsativoexpediente,
+            Iduser: this.Iduser
         }
     }
 }
