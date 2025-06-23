@@ -1359,7 +1359,7 @@ SELECT e.IdExpediente AS 'Id do Expediente',
 FROM expediente e JOIN users u
 						ON e.IdUser = u.IdUser
 ORDER BY e.DtExpediente ASC,
-			e.HrExpediente ASC;		
+			e.HrInicioExpediente ASC;		
 		
 /*
 	Criação da view vwExpedientes_Ativos, esta view tem como objetivo 
@@ -1376,7 +1376,7 @@ FROM expediente e JOIN users u
 						ON e.IdUser = u.IdUser
 WHERE e.StsAtivoExpediente = 's'
 ORDER BY e.DtExpediente ASC,
-			e.HrExpediente ASC;
+			e.HrInicioExpediente ASC;
 
 /*
 	Criação da view vwExpedientes_Nao_Ativos, esta view tem como objetivo 
@@ -1393,7 +1393,7 @@ FROM expediente e JOIN users u
 						ON e.IdUser = u.IdUser
 WHERE e.StsAtivoExpediente = 'n'
 ORDER BY e.DtExpediente ASC,
-			e.HrExpediente ASC;
+			e.HrInicioExpediente ASC;
 
 /*
 	Criação da view vwTodos_Eventos, esta view tem como objetivo 
