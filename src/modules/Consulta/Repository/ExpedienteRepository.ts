@@ -12,7 +12,8 @@ export default class ExpedienteRepository implements IExpediente{
         const expedienteAdicionado = new Expediente()
         expedienteAdicionado.Idexpediente = 1;
         expedienteAdicionado.DtExpediente = new Date(expediente.DtExpediente);
-        expedienteAdicionado.Hrexpediente = expediente.HrExpediente;
+        expedienteAdicionado.HrInicioExpediente = expediente.HrInicioExpediente;
+        expedienteAdicionado.HrFinalExpediente = expediente.HrFinalExpediente;
         expedienteAdicionado.Iduser = expediente.IdUser;
         expedienteAdicionado.Stsativoexpediente = expediente.StsAtivoExpediente;
         return expedienteAdicionado;

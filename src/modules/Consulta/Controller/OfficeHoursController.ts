@@ -16,7 +16,8 @@ export default class OfficeHoursController {
             OfficeHours: [
                 {
                     DtExpediente: new Date('10-6-2025'),
-                    HrExpediente: '12:00',
+                    HrInicioExpediente: '12:00',
+                    HrFinalExpediente: '12:00',
                     StsAtivoExpediente: 's'
                 }
             ]
@@ -24,7 +25,7 @@ export default class OfficeHoursController {
         })
 
         return reply.send({
-            success: teste[0].DtExpediente.toLocaleTimeString()
+            success: teste[0]
         });
     }
 
