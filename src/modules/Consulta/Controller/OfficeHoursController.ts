@@ -12,19 +12,19 @@ export default class OfficeHoursController {
         const addOfficeHoursService = new AddOfficeHours(this.repository)
 
         const teste = await addOfficeHoursService.execute({
-            idUser: req.user.IdUser,
-            officeHours: [
+            IdUser: req.user.IdUser,
+            OfficeHours: [
                 {
-                    dtExpediente: new Date('10-6-2025'),
-                    hrExpediente: '12:00',
-                    stsAtivoExpediente: 's'
+                    DtExpediente: new Date('10-6-2025'),
+                    HrExpediente: '12:00',
+                    StsAtivoExpediente: 's'
                 }
             ]
 
         })
 
         return reply.send({
-            success: teste[0].dtexpediente.toLocaleTimeString()
+            success: teste[0].DtExpediente.toLocaleTimeString()
         });
     }
 

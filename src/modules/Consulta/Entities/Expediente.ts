@@ -1,7 +1,7 @@
 export default class Expediente {
     public IdExpediente: number = 0;
     public IdUser: number = 0
-    public DtExpediente: number = 0;
+    public DtExpediente: Date = new Date();
     public HrExpedienteInicio: string = '';
     public HrExpedienteFinal: string = '';
 
