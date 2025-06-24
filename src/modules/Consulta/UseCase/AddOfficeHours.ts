@@ -7,19 +7,12 @@ export default class AddOfficeHours {
         private repository: IExpediente
     ) {}
 
-    public async execute(expedientes: IOfficeHoursToAddService): Promise<Expediente[]> {
-        const expedienteArr: Array<Expediente> = [];
-
+    public async execute(expedientes: IOfficeHoursToAddService): Promise<void> {
         expedientes.OfficeHours.forEach(async (expediente) => {
-            let expedienteWasAdd = await this.repository.adicionarExpediente({
+            await this.repository.adicionarExpediente({
                 IdUser: expedientes.IdUser,
                 ...expediente,
             })
-            
-            expedienteArr.push(expedienteWasAdd);
-        })
-
-
-        return expedienteArr;
+        });
     }
 }

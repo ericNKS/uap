@@ -1,7 +1,7 @@
 export default class Expediente {
     public Idexpediente: number = 0;
     public Iduser: number = 0
-    public DtExpediente: Date = new Date();
+    public DtExpediente: number = 0;
     public HrInicioExpediente: string = '';
     public HrFinalExpediente: string = '';
     public Stsativoexpediente: string = 's';
@@ -9,7 +9,7 @@ export default class Expediente {
     public toJson(): Record<string, any> {
         return {
             Idexpediente: this.Idexpediente,
-            DtExpediente: this.DtExpediente.toISOString(),
+            DtExpediente: this.DtExpediente,
             HrInicioExpediente: this.HrInicioExpediente,
             HrFinalExpediente: this.HrFinalExpediente,
             Stsativoexpediente: this.Stsativoexpediente,

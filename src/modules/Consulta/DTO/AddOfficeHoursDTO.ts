@@ -1,15 +1,23 @@
-import { IsOptional, IsString, Length} from "class-validator";
+import { IsArray, ArrayMinSize, ValidateNested, IsString, IsNumber } from "class-validator";
+import { Type } from "class-transformer";
 
 class OfficeHoursDTO {
-    @IsString({
-        message: 'Precisa do dia do expediente'
-    })
-    DtExpediente: Date = new Date();
-    HrExpediente: string = '';
-    StsAtivoExpedient: string = 's';
+    @IsNumber()
+    DtExpediente: number = 0;
+
+    @IsString()
+    HrInicioExpediente: string = '';
+
+    @IsString()
+    HrFinalExpediente: string = '';
 }
 
 export default class addOfficeHoursDTO {
-
-    expedientes: Array<OfficeHoursDTO> = []
+    @IsArray()
+    @ArrayMinSize(1, {
+        message: 'Precisa ter pelo menos um expediente'
+    })
+    @ValidateNested({ each: true })
+    @Type(() => OfficeHoursDTO)
+    expedientes: Array<OfficeHoursDTO> = [];
 }
