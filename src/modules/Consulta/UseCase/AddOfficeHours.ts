@@ -1,10 +1,10 @@
 import Expediente from "../Entities/Expediente";
-import IExpediente from "../Interfaces/IExpediente";
+import IExpedienteRepository from "../Interfaces/IExpedienteRepository";
 import { IOfficeHoursToAddService } from "../Interfaces/IOfficeHoursToAdd";
 
 export default class AddOfficeHours {
     public constructor(
-        private repository: IExpediente
+        private repository: IExpedienteRepository
     ) {}
 
     public async execute(expedientes: IOfficeHoursToAddService): Promise<void> {

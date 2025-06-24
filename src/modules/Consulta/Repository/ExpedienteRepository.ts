@@ -1,9 +1,9 @@
 import mysql from 'mysql2/promise';
 import { Database } from '../../../config/database/Database';
-import IExpediente from '../Interfaces/IExpediente';
+import IExpedienteRepository from '../Interfaces/IExpedienteRepository';
 import { IOfficeHoursToAdd } from '../Interfaces/IOfficeHoursToAdd';
 import Expediente from '../Entities/Expediente';
-export default class ExpedienteRepository implements IExpediente{
+export default class ExpedienteRepository implements IExpedienteRepository{
     constructor(
         private db: mysql.Pool = Database
     ) {}
