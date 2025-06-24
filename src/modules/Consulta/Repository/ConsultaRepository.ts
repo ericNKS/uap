@@ -24,7 +24,7 @@ export default class ConsultaRepository implements IConsultaRepository{
         ];
         
         try {
-            await this.db.query(query, dataToAdd);
+            await this.db.query(query, dataToAdd)
         } catch (error) {
             throw error;
         }

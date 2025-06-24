@@ -4,6 +4,7 @@ import UserController from "../modules/Auth/Controller/UserController";
 import AuthMiddleware from "../config/Middleware/AuthMiddleware";
 import ImageController from "../modules/File/Controller/ImageController";
 import OfficeHoursController from "../modules/Consulta/Controller/OfficeHoursController";
+import ConsultaController from "../modules/Consulta/Controller/ConsultasController";
 
 const handleRule = (rules?: Array<string>): Record<string, any> => {
     let middleware = new AuthMiddleware(rules || []);
@@ -31,6 +32,9 @@ export const PrivateRoute = (app: FastifyInstance) => {
 
     // Office Hours
     app.get('/api/expedientes/:especialista', handleRule(), OfficeHoursController.list.bind(OfficeHoursController));
+
+    // Consultas
+    app.post('/api/consultas', handleRule(), ConsultaController.store.bind(ConsultaController));
 }
 
 export const EspecialistaRoute = (app:FastifyInstance) => {

@@ -1,21 +1,6 @@
-import { IsArray, ArrayMinSize, ValidateNested, IsString, IsNumber, IsDateString } from "class-validator";
-import { Type } from "class-transformer";
+import { IsString, IsNumber, IsDateString } from "class-validator";
 
-class OfficeHoursDTO {
-    @IsNumber()
-    DtExpediente: number = 0;
-
-    @IsString()
-    HrInicioExpediente: string = '';
-
-    @IsString()
-    HrFinalExpediente: string = '';
-}
-
-export default class addOfficeHoursDTO {
-    @IsNumber()
-    IdPaciente: number = 0;
-
+export default class AddConsultaDTO {
     @IsNumber()
     IdEspecialista: number = 0;
 
@@ -26,8 +11,8 @@ export default class addOfficeHoursDTO {
     DiaSemanaConsulta: number = 0;
 
     @IsString()
-    HrConsulta: number = 0;
+    HrConsulta: string = '';
 
     @IsString()
-    InfoConsulta: number = 0;
+    InfoConsulta: string = '';
 }
