@@ -9,6 +9,7 @@ import { IOfficeHours } from "../Interfaces/IOfficeHoursToAdd";
 import ListOfficeHours from "../UseCase/ListOfficeHours";
 import UserRepository from "../../Auth/Repository/UserRepository";
 import { Database } from "../../../config/database/Database";
+import ActiveDesativeOfficeHours from "../UseCase/ActiveDesativeOfficeHours";
 
 export default class OfficeHoursController {
     private static repository: ExpedienteRepository = new ExpedienteRepository();
@@ -65,22 +66,43 @@ export default class OfficeHoursController {
         const userRepository = new UserRepository(Database);
 
         const especialistaId = req.params.especialista;
-        const user = await userRepository.findById(especialistaId);
+        try {
+            const user = await userRepository.findById(especialistaId);
         
-        const expedientes = await listOfficeHoursService.execute(user);
+            const expedientes = await listOfficeHoursService.execute(user);
 
-        return reply.send({
-            expedientes
-        });
+            return reply.send({
+                expedientes
+            });
+        } catch (error) {
+            return reply.send({
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+            });
+        }
     }
 
     public static async changeStatusOfficeHours(
-        req: FastifyRequest,
+        req: FastifyRequest<{
+            Params: {
+                id: number
+            }
+        }>,
         reply: FastifyReply
     ) {
+        const IdUser = req.user.IdUser;
+        const IdExpediente = req.params.id;
 
-        return reply.send({
-            error: 'to-do'
-        });
+        const activeDesativeOfficeHoursService = new ActiveDesativeOfficeHours(this.repository)
+
+        try {
+            activeDesativeOfficeHoursService.execute(IdUser, IdExpediente);
+            return reply.send({
+                success: 'Status atualizado com sucesso'
+            });
+        } catch (error) {
+            return reply.send({
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+            });
+        }
     }
 }
