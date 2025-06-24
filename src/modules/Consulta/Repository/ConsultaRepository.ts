@@ -35,34 +35,61 @@ export default class ConsultaRepository implements IConsultaRepository{
             CALL spListarConsultasNaoConfirmadas(?)
         `;
         
-        return [];
+        try {
+            const [rows] = await this.db.query(query, [IdEspecialista]) as [Consulta[][], any];
+            return rows[0];
+        } catch (error) {
+            throw error;
+        }
     }
 
     public async listarConsultasConfirmadasPorPaciente(IdPaciente: number): Promise<Array<Consulta>> {
         const query = `
             CALL spListarConsultasConfirmadasPorPaciente(?)
         `;
-        return [];
+        
+        try {
+            const [rows] = await this.db.query(query, [IdPaciente]) as [Consulta[][], any];
+            return rows[0];
+        } catch (error) {
+            throw error;
+        }
     }
 
     public async listarConsultasConfirmadasPorEspecialista(IdEspecialista: number): Promise<Array<Consulta>> {
         const query = `
             CALL spListarConsultasConfirmadasPorEspecialista(?)
         `;
-        return [];
+        
+        try {
+            const [rows] = await this.db.query(query, [IdEspecialista]) as [Consulta[][], any];
+            return rows[0];
+        } catch (error) {
+            throw error;
+        }
     }
 
     public async ativarConsulta(IdConsulta: number): Promise<void> {
         const query = `
             CALL spAtivarConsulta(?)
         `;
-        return;
+        
+        try {
+            await this.db.query(query, [IdConsulta]);
+        } catch (error) {
+            throw error;
+        }
     }
 
     public async desativarConsulta(IdConsulta: number): Promise<void> {
         const query = `
             CALL spDesativarConsulta(?)
         `;
-        return;
+        
+        try {
+            await this.db.query(query, [IdConsulta]);
+        } catch (error) {
+            throw error;
+        }
     }
 }
