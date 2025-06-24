@@ -629,14 +629,14 @@ END
 $$
 
 /*
-	Criação da Procedure spListarExpedientes, esta
-	procedure pega o Id do Especialista e, após 
-	verificar que o mesmo existe, ele Lista todos
-	os Expedientes disponíveis no Banco de Dados.
+	Criação da Procedure spListarExpedientesAtivos, esta
+	procedure pega o Id do Especialista e, após verificar 
+	que o mesmo existe, ele Lista os Expedientes ativos
+	disponíveis no Banco de Dados.
 */
 
 delimiter $$
-CREATE PROCEDURE spListarExpedientes(
+CREATE PROCEDURE spListarExpedientesAtivos(
 	IN pIdUser BIGINT
 )
 BEGIN
@@ -657,6 +657,43 @@ BEGIN
 		FROM expediente e JOIN users u
 								ON e.IdUser = u.IdUser
 		WHERE e.IdUser = vIdUser
+		AND e.StsAtivoExpediente = 's'
+		ORDER BY e.DtExpediente ASC,
+					e.HrInicioExpediente ASC;
+	END if;
+END
+$$
+
+/*
+	Criação da Procedure spListarExpedientesNaoAtivos, esta
+	procedure pega o Id do Especialista e, após verificar 
+	que o mesmo existe, ele Lista os Expedientes não ativos
+	disponíveis no Banco de Dados.
+*/
+
+delimiter $$
+CREATE PROCEDURE spListarExpedientesNaoAtivos(
+	IN pIdUser BIGINT
+)
+BEGIN
+	DECLARE vIdUser BIGINT DEFAULT 0;
+
+	SELECT if(COUNT(u.IdUser) <> 1, 0 , u.IdUser) INTO vIdUser
+	FROM users u
+	WHERE pIduser = u.IdUser
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMIN')
+	GROUP BY(u.IdUser);
+	
+	if vIdUser = pIdUser then
+		SELECT e.IdExpediente,
+			 	 sfFormatarDiaSemana(e.DtExpediente) AS 'DtExpediente',
+			 	 e.HrInicioExpediente,
+			 	 e.HrFinalExpediente
+		FROM expediente e JOIN users u
+								ON e.IdUser = u.IdUser
+		WHERE e.IdUser = vIdUser
+		AND e.StsAtivoExpediente = 'n'
 		ORDER BY e.DtExpediente ASC,
 					e.HrInicioExpediente ASC;
 	END if;
