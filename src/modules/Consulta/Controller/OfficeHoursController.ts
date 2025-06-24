@@ -54,7 +54,7 @@ export default class OfficeHoursController {
     public static async list(
         req: FastifyRequest<{
             Params: {
-                id: number
+                especialista: number
             }
         }>,
         reply: FastifyReply
@@ -64,7 +64,7 @@ export default class OfficeHoursController {
 
         const userRepository = new UserRepository(Database);
 
-        const especialistaId = req.params.id;
+        const especialistaId = req.params.especialista;
         const user = await userRepository.findById(especialistaId);
         
         const expedientes = await listOfficeHoursService.execute(user);
