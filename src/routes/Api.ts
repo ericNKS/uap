@@ -43,6 +43,8 @@ export const EspecialistaRoute = (app:FastifyInstance) => {
 
     app.post('/api/expedientes', handleRule(rule), OfficeHoursController.store.bind(OfficeHoursController));
     app.patch('/api/expedientes/:id', handleRule(rule), OfficeHoursController.changeStatusOfficeHours.bind(OfficeHoursController));
+
+    app.get('/api/consultas/nao-confirmadas', handleRule(rule), ConsultaController.listNotConfirmed.bind(ConsultaController));
 }
 
 export const AdminRoute = (app: FastifyInstance) => {

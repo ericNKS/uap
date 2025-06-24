@@ -5,6 +5,7 @@ import FormExceptions from "../../../utils/FormExceptions";
 import ConsultaRepository from "../Repository/ConsultaRepository";
 import AddConsultaDTO from "../DTO/AddConsultaDTO";
 import AddConsulta from "../UseCase/AddConsulta";
+import ListAppointmentNotConfirmed from "../UseCase/ListAppointmentNotConfirmed";
 
 export default class ConsultaController {
     private static repository: ConsultaRepository = new ConsultaRepository();
@@ -30,6 +31,26 @@ export default class ConsultaController {
             return reply.send({
                 success: 'Expedientes salvo com sucesso!'
             });
+        } catch (error) {
+            return reply.send({
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+            });
+        }
+    }
+
+    public static async listNotConfirmed(
+        req: FastifyRequest,
+        reply: FastifyReply
+    ) {
+
+        const IdUser = req.user.IdUser;
+
+        const addConsulta = new ListAppointmentNotConfirmed(this.repository)
+        
+        try {
+            const consultas = await addConsulta.execute(IdUser);
+
+            return reply.send(consultas);
         } catch (error) {
             return reply.send({
                 error: 'Algo inesperado aconteceu, tente novamente mais tarde'
