@@ -1,8 +1,8 @@
-import IExpediente from "../Interfaces/IExpediente";
+import IExpedienteRepository from "../Interfaces/IExpedienteRepository";
 
 export default class ActiveDesativeOfficeHours {
     constructor(
-        private repository: IExpediente
+        private repository: IExpedienteRepository
     ) {}
 
     public async execute(IdUser: number, IdExpediente: number): Promise<void> {

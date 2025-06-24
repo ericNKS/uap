@@ -1,10 +1,10 @@
 import User from "../../Auth/Entities/User";
 import Expediente from "../Entities/Expediente";
-import IExpediente from "../Interfaces/IExpediente";
+import IExpedienteRepository from "../Interfaces/IExpedienteRepository";
 
 export default class ListOfficeHours {
     constructor(
-        private repository: IExpediente
+        private repository: IExpedienteRepository
     ) {}
 
     public async execute(especialista: User): Promise<Array<Expediente>> {
