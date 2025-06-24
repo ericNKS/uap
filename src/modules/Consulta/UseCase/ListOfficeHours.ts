@@ -9,7 +9,7 @@ export default class ListOfficeHours {
 
     public async execute(especialista: User): Promise<Array<Expediente>> {
         if(!especialista.IdUser) throw new Error('Especialista não encontrado');
-        
+        // await this.repository.changeStatusExpediente(especialista.IdUser, 1);
         return await this.repository.listarExpedientes(especialista.IdUser);
     }
 }

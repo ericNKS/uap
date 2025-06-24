@@ -39,4 +39,20 @@ export default class ExpedienteRepository implements IExpediente{
             throw error;
         }
     }
+
+
+    public async changeStatusExpediente(IdUser: number, IdExpediente: number): Promise<void> {
+        const query = `
+            CALL spAtivarDesativarExpediente(?, ?)
+        `;
+
+        try {
+            await this.db.query(query, [
+                IdUser,
+                IdExpediente
+            ]);
+        } catch (error) {
+            throw error;
+        }
+    }
 }
