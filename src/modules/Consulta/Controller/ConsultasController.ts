@@ -6,6 +6,7 @@ import ConsultaRepository from "../Repository/ConsultaRepository";
 import AddConsultaDTO from "../DTO/AddConsultaDTO";
 import AddConsulta from "../UseCase/AddConsulta";
 import ListAppointmentNotConfirmed from "../UseCase/ListAppointmentNotConfirmed";
+import ListAppointmentConfirmed from "../UseCase/ListAppointmentConfirmed";
 
 export default class ConsultaController {
     private static repository: ConsultaRepository = new ConsultaRepository();
@@ -28,11 +29,51 @@ export default class ConsultaController {
         try {
             await addConsulta.execute(IdUser, addConsultaDTO)
 
-            return reply.send({
+            return reply.code(201).send({
                 success: 'Expedientes salvo com sucesso!'
             });
         } catch (error) {
-            return reply.send({
+            return reply.code(500).send({
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+            });
+        }
+    }
+
+    public static async listEspecialistaConfirmed(
+        req: FastifyRequest,
+        reply: FastifyReply
+    ) {
+
+        const IdUser = req.user.IdUser;
+
+        const addConsulta = new ListAppointmentConfirmed(this.repository)
+        
+        try {
+            const consultas = await addConsulta.especialista(IdUser);
+
+            return reply.send(consultas);
+        } catch (error) {
+            return reply.code(500).send({
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+            });
+        }
+    }
+
+    public static async listPacienteConfirmed(
+        req: FastifyRequest,
+        reply: FastifyReply
+    ) {
+
+        const IdUser = req.user.IdUser;
+
+        const addConsulta = new ListAppointmentConfirmed(this.repository)
+        
+        try {
+            const consultas = await addConsulta.paciente(IdUser);
+
+            return reply.send(consultas);
+        } catch (error) {
+            return reply.code(500).send({
                 error: 'Algo inesperado aconteceu, tente novamente mais tarde'
             });
         }
@@ -52,7 +93,47 @@ export default class ConsultaController {
 
             return reply.send(consultas);
         } catch (error) {
-            return reply.send({
+            return reply.code(500).send({
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+            });
+        }
+    }
+
+    public static async active(
+        req: FastifyRequest,
+        reply: FastifyReply
+    ) {
+
+        const IdUser = req.user.IdUser;
+
+        const addConsulta = new ListAppointmentNotConfirmed(this.repository)
+        
+        try {
+            const consultas = await addConsulta.execute(IdUser);
+
+            return reply.send(consultas);
+        } catch (error) {
+            return reply.code(500).send({
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+            });
+        }
+    }
+
+    public static async disable(
+        req: FastifyRequest,
+        reply: FastifyReply
+    ) {
+
+        const IdUser = req.user.IdUser;
+
+        const addConsulta = new ListAppointmentNotConfirmed(this.repository)
+        
+        try {
+            const consultas = await addConsulta.execute(IdUser);
+
+            return reply.send(consultas);
+        } catch (error) {
+            return reply.code(500).send({
                 error: 'Algo inesperado aconteceu, tente novamente mais tarde'
             });
         }
