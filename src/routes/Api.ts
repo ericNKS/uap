@@ -30,15 +30,15 @@ export const PrivateRoute = (app: FastifyInstance) => {
     app.patch('/api/users/password', handleRule(), UserController.updatePassword.bind(UserController));
 
     // Office Hours
-    app.get('/api/expediente', handleRule(), OfficeHoursController.list.bind(OfficeHoursController));
+    app.get('/api/expedientes/:especialista', handleRule(), OfficeHoursController.list.bind(OfficeHoursController));
 }
 
 export const EspecialistaRoute = (app:FastifyInstance) => {
     // Office Hours
-    const rule = ['RULE_ADMIN', 'RULE_ESPECIALISTA_PENDENTE', 'RULE_ESPECIALISTA_ATIVO'];
+    const rule = ['RULE_ADMIN', 'RULE_ESPECIALISTA_ATIVO'];
 
-    app.post('/api/expediente', handleRule(rule), OfficeHoursController.store.bind(OfficeHoursController));
-    app.patch('/api/expediente', handleRule(rule), OfficeHoursController.changeStatusOfficeHours.bind(OfficeHoursController));
+    app.post('/api/expedientes', handleRule(rule), OfficeHoursController.store.bind(OfficeHoursController));
+    app.patch('/api/expedientes/:id', handleRule(rule), OfficeHoursController.changeStatusOfficeHours.bind(OfficeHoursController));
 }
 
 export const AdminRoute = (app: FastifyInstance) => {

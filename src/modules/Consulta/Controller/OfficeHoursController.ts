@@ -6,6 +6,9 @@ import { validate } from "class-validator";
 import FormExceptions from "../../../utils/FormExceptions";
 import addOfficeHoursDTO from "../DTO/AddOfficeHoursDTO";
 import { IOfficeHours } from "../Interfaces/IOfficeHoursToAdd";
+import ListOfficeHours from "../UseCase/ListOfficeHours";
+import UserRepository from "../../Auth/Repository/UserRepository";
+import { Database } from "../../../config/database/Database";
 
 export default class OfficeHoursController {
     private static repository: ExpedienteRepository = new ExpedienteRepository();
@@ -49,12 +52,25 @@ export default class OfficeHoursController {
     }
 
     public static async list(
-        req: FastifyRequest,
+        req: FastifyRequest<{
+            Params: {
+                especialista: number
+            }
+        }>,
         reply: FastifyReply
     ) {
 
+        const listOfficeHoursService = new ListOfficeHours(this.repository);
+
+        const userRepository = new UserRepository(Database);
+
+        const especialistaId = req.params.especialista;
+        const user = await userRepository.findById(especialistaId);
+        
+        const expedientes = await listOfficeHoursService.execute(user);
+
         return reply.send({
-            error: 'to-do'
+            expedientes
         });
     }
 
