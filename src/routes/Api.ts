@@ -30,7 +30,7 @@ export const PrivateRoute = (app: FastifyInstance) => {
     app.patch('/api/users/password', handleRule(), UserController.updatePassword.bind(UserController));
 
     // Office Hours
-    app.get('/api/expedientes', handleRule(), OfficeHoursController.list.bind(OfficeHoursController));
+    app.get('/api/expedientes/:id', handleRule(), OfficeHoursController.list.bind(OfficeHoursController));
 }
 
 export const EspecialistaRoute = (app:FastifyInstance) => {

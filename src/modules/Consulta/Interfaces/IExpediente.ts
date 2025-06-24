@@ -3,4 +3,5 @@ import {IOfficeHoursToAdd} from "./IOfficeHoursToAdd";
 
 export default interface IExpediente {
     adicionarExpediente: (expediente: IOfficeHoursToAdd) => Promise<void>
+    listarExpedientes: (IdUser: number) => Promise<Array<Expediente>>
 }
