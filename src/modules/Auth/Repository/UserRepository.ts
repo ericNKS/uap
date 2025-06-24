@@ -1,11 +1,11 @@
 import IUserRepository from "../Interfaces/IUserRepository";
 import User from "../Entities/User";
 import mysql from 'mysql2/promise';
-import ExceptionNotFound from "../Utils/ExceptionNotFound";
+import { Database } from "../../../config/database/Database";
 
 export default class UserRepository implements IUserRepository {
     constructor(
-        private db: mysql.Pool
+        private db: mysql.Pool = Database
     ) {}
     
     async createPaciente(user: User): Promise<User> {

@@ -1,6 +1,15 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import ExpedienteRepository from "../Repository/ExpedienteRepository";
 import AddOfficeHours from "../UseCase/AddOfficeHours";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
+import FormExceptions from "../../../utils/FormExceptions";
+import addOfficeHoursDTO from "../DTO/AddOfficeHoursDTO";
+import { IOfficeHours } from "../Interfaces/IOfficeHoursToAdd";
+import ListOfficeHours from "../UseCase/ListOfficeHours";
+import UserRepository from "../../Auth/Repository/UserRepository";
+import { Database } from "../../../config/database/Database";
+import ActiveDesativeOfficeHours from "../UseCase/ActiveDesativeOfficeHours";
 
 export default class OfficeHoursController {
     private static repository: ExpedienteRepository = new ExpedienteRepository();
@@ -9,42 +18,91 @@ export default class OfficeHoursController {
         req: FastifyRequest,
         reply: FastifyReply
     ) {
+        const IdUser = req.user.IdUser;
+
+        const OfficeHours = plainToInstance(addOfficeHoursDTO, req.body);
+        const validationsErr = await validate(OfficeHours);
+        const err = FormExceptions(validationsErr);
+        if(err) {
+            return reply.code(400).send(err);
+        }
+
         const addOfficeHoursService = new AddOfficeHours(this.repository)
 
-        const teste = await addOfficeHoursService.execute({
-            idUser: req.user.IdUser,
-            officeHours: [
-                {
-                    dtExpediente: new Date('10-6-2025'),
-                    hrExpediente: '12:00',
-                    stsAtivoExpediente: 's'
-                }
-            ]
+        const officeHoursMapped: IOfficeHours[] = OfficeHours.expedientes.map(exp => ({
+            DtExpediente: exp.DtExpediente,
+            HrInicioExpediente: exp.HrInicioExpediente,
+            HrFinalExpediente: exp.HrFinalExpediente
+        }));
+        
+        try {
+            await addOfficeHoursService.execute({
+                IdUser,
+                OfficeHours: officeHoursMapped
 
-        })
+            })
 
-        return reply.send({
-            success: teste[0].dtexpediente.toLocaleTimeString()
-        });
+            return reply.send({
+                success: 'Expedientes salvo com sucesso!'
+            });
+        } catch (error) {
+            return reply.send({
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+            });
+        }
     }
 
     public static async list(
-        req: FastifyRequest,
+        req: FastifyRequest<{
+            Params: {
+                especialista: number
+            }
+        }>,
         reply: FastifyReply
     ) {
 
-        return reply.send({
-            error: 'to-do'
-        });
+        const listOfficeHoursService = new ListOfficeHours(this.repository);
+
+        const userRepository = new UserRepository(Database);
+
+        const especialistaId = req.params.especialista;
+        try {
+            const user = await userRepository.findById(especialistaId);
+        
+            const expedientes = await listOfficeHoursService.execute(user);
+
+            return reply.send({
+                expedientes
+            });
+        } catch (error) {
+            return reply.send({
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+            });
+        }
     }
 
     public static async changeStatusOfficeHours(
-        req: FastifyRequest,
+        req: FastifyRequest<{
+            Params: {
+                id: number
+            }
+        }>,
         reply: FastifyReply
     ) {
+        const IdUser = req.user.IdUser;
+        const IdExpediente = req.params.id;
 
-        return reply.send({
-            error: 'to-do'
-        });
+        const activeDesativeOfficeHoursService = new ActiveDesativeOfficeHours(this.repository)
+
+        try {
+            activeDesativeOfficeHoursService.execute(IdUser, IdExpediente);
+            return reply.send({
+                success: 'Status atualizado com sucesso'
+            });
+        } catch (error) {
+            return reply.send({
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+            });
+        }
     }
 }

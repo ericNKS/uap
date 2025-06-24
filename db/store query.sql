@@ -1,18 +1,4 @@
--- Criação do Banco de Dados
-
 CREATE DATABASE if NOT EXISTS UAP;
-
-
-
--- Criação das Tabelas
-
-/* 
-	Criação da tabela Usuário, esta tabela engloba todas as três 
-	possibilidades de usuários possíveis no Banco de Dados, 
-	sendo eles: Pacientes, Especialistas e Administradores.
-	Eles, por sua vez, são diferenciados por um atributo
-	nomeado 'RulesUSer'.
-*/
 
 CREATE TABLE if NOT EXISTS users(
 IdUser BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -30,17 +16,12 @@ StsVerificarEmail BOOLEAN NOT NULL DEFAULT FALSE,
 StsAtivoUser CHAR(1) NOT NULL
 );
 
-/* 
-	Criação da tabela Consultas, esta tabela tem duas chaves 
-	estrangeiras, advindas da tabela 'Paciente', possuindo 
-	Data, Horário e Informações adicionais da consulta.
-*/
-
 CREATE TABLE if NOT EXISTS consultas(
 IdConsulta BIGINT AUTO_INCREMENT PRIMARY KEY,
 IdPaciente BIGINT,
 IdEspecialista BIGINT,
 DtConsulta DATE NOT NULL,
+DiaSemanaConsulta SMALLINT NOT NULL,
 HrConsulta TIME NOT NULL,
 InfoConsulta TEXT,
 StsAtivoConsulta CHAR(1) NOT NULL DEFAULT 'n',
@@ -48,30 +29,15 @@ FOREIGN KEY(IdPaciente) REFERENCES users(IdUser),
 FOREIGN KEY(IdEspecialista) REFERENCES users(IdUser)
 );
 
-/* 
-	Criação da tabela Expediente, esta tabela representa
-	o expediente de cada Especialista registrado no
-	banco de dados, tendo sua data e hora.
-*/
-
 CREATE TABLE if NOT EXISTS expediente(
 IdExpediente BIGINT AUTO_INCREMENT PRIMARY KEY,
 IdUser BIGINT,
-DtExpediente DATE NOT NULL,
-HrExpediente TIME NOT NULL,
+DtExpediente SMALLINT NOT NULL,
+HrInicioExpediente TIME NOT NULL,
+HrFinalExpediente TIME NOT NULL,
 StsAtivoExpediente CHAR(1) NOT NULL DEFAULT 's',
 FOREIGN KEY(IdUser) REFERENCES users(IdUser)
 );
-
-/* 
-	Criação da tabela Eventos, esta tabela possui
-	todas as informações necessárias para a 
-	criação de eventos, como nome, data, hora,
-	local, informações e imagem. Um adendo é 
-	que, por ser uma relação muitos para muitos,
-	as chaves estrangeiras serão guardadas em outa
-	tabela.
-*/
 
 CREATE TABLE if NOT EXISTS eventos(
 IdEvento BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -84,13 +50,6 @@ ImgUrlEvento TEXT,
 StsAtivoEvento CHAR(1) NOT NULL DEFAULT 'n'
 );
 
-/* 
-	Criação da tabela UserEventos, esta tabela 
-	tem duas chaves estrangeiras, referenciando
-	tanto a tabela de Usuários quanto a tabela 
-	de Eventos.
-*/
-
 CREATE TABLE if NOT EXISTS usereventos(
 IdUserEventos BIGINT AUTO_INCREMENT PRIMARY KEY,
 IdUser BIGINT,
@@ -99,11 +58,8 @@ FOREIGN KEY(IdUser) REFERENCES users(IdUser),
 FOREIGN KEY(IdEvento) REFERENCES eventos(IdEvento)
 );
 
-
-
--- Criação de Procedures
-
 delimiter $$
+
 CREATE PROCEDURE spRegistrarPaciente(
 	IN pNomeUser VARCHAR(70),
 	IN pEmailUser VARCHAR(100),
@@ -128,8 +84,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spRegistrarEspecialista(
 	IN pNomeUser VARCHAR(70),
 	IN pEmailUser VARCHAR(100),
@@ -155,8 +111,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spAtivarEmail(
 	IN pIdUser BIGINT
 )
@@ -176,9 +132,59 @@ GROUP BY(u.IdUser);
 END
 $$
 
+delimiter $$
+
+CREATE PROCEDURE spAtualizarInfoUsuario (
+	IN pIdUser BIGINT,
+	IN pNomeUser VARCHAR(70),
+	IN pEmailUser VARCHAR(100),
+	IN pTelUser VARCHAR(20),
+	IN pGenUser VARCHAR(30),
+	IN pPronomeUser VARCHAR(10)
+)
+BEGIN
+	DECLARE vIdUser BIGINT DEFAULT 0;
+	SELECT if(COUNT(u.IdUser) <> 1,0, u.IdUser) INTO vIdUser
+	FROM users u
+	WHERE pIdUser = u.IdUser
+	GROUP BY(u.IdUser);
+	
+	if vIdUser = pIdUser then
+		UPDATE users u
+		SET NomeUser = pNomeUser,
+		EmailUser = pEmailUser,
+		TelUser = pTelUser,
+		GenUser = pGenUser,
+		PronomeUser = pPronomeUser
+		WHERE vIdUser = u.IdUser;
+	END if;
+END
+$$
 
 delimiter $$
-CREATE PROCEDURE spAdicionarImgUsuario(
+
+CREATE PROCEDURE spAtualizarSenhaUsuario (
+	IN pIdUser BIGINT,
+	IN pSenhaUser VARCHAR(100)
+)
+BEGIN
+	DECLARE vIdUser BIGINT DEFAULT 0;
+	SELECT if(COUNT(u.IdUser) <> 1,0, u.IdUser) INTO vIdUser
+	FROM users u
+	WHERE pIdUser = u.IdUser
+	GROUP BY(u.IdUser);
+	
+	if vIdUser = pIdUser then
+		UPDATE users u
+		SET SenhaUser = pSenhaUser
+		WHERE vIdUser = u.IdUser;
+	END if;
+END
+$$
+
+delimiter $$
+
+CREATE PROCEDURE spAtualizarImgUsuario(
 	IN pIdUser BIGINT,
 	IN pImgUrlUser TEXT
 )
@@ -199,8 +205,8 @@ BEGIN
 END 
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spExcluirUsuarios( 
 	IN pIdUser BIGINT
 )
@@ -211,8 +217,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spListarPacientes()
 BEGIN
 	SELECT u.IdUser,
@@ -228,8 +234,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spListarEspecialistasAtivos()
 BEGIN
 	SELECT u.IdUser,
@@ -247,8 +253,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spListarEspecialistasPendentes()
 BEGIN
 	SELECT u.IdUser,
@@ -266,8 +272,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spListarUsuariosExcluidos()
 BEGIN
 	SELECT u.IdUser,
@@ -281,8 +287,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spPegarUserEmail(
 	IN pEmailUser VARCHAR(100)
 )
@@ -311,8 +317,8 @@ BEGIN
 END 
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spPegarUserCpfOrCnpj(
 	IN pCpfOrCnpjUser VARCHAR(20)
 )
@@ -332,8 +338,8 @@ BEGIN
 END 
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spPegarUserId(
 	IN pIdUser BIGINT
 )
@@ -364,8 +370,8 @@ BEGIN
 END 
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spReativarUsuarios(
 	IN pIdUser BIGINT
 )
@@ -376,8 +382,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spAtivarEspecialistas(
 	IN pIdUser BIGINT 
 	)
@@ -388,30 +394,32 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spAdicionarExpediente (
 	IN pIdUser BIGINT,
-	IN pDtExpediente DATE,
-	IN pHrExpediente TIME
+	IN pDtExpediente SMALLINT,
+	IN pHrInicioExpediente TIME,
+	IN pHrFinalExpediente TIME
 )
 BEGIN
 	DECLARE vIdUser BIGINT DEFAULT 0;
 	SELECT if(COUNT(u.IdUser) <> 1,0, u.IdUser) INTO vIdUser
 	FROM users u
 	WHERE pIdUser = u.IdUser
-	AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMIN')
 	GROUP BY(u.IdUser);
 	
 	if vIdUser = pIdUser then
-		INSERT INTO expediente (IdUser, DtExpediente, HrExpediente)
-		VALUES(pIdUser, pDtExpediente, pHrExpediente);
+		INSERT INTO expediente (IdUser, DtExpediente, HrInicioExpediente, HrFinalExpediente)
+		VALUES(pIdUser, pDtExpediente, pHrInicioExpediente, pHrFinalExpediente);
 	END if;
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spAtivarDesativarExpediente(
 	IN pIdUser BIGINT,
 	IN pIdExpediente BIGINT
@@ -423,7 +431,8 @@ BEGIN
 	SELECT if(COUNT(u.IdUser) <> 1,0, u.IdUser) INTO vIdUser
 	FROM users u
 	WHERE pIdUser = u.IdUser
-	AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMIN')
 	GROUP BY(u.IdUser);
 	
 	SELECT e.StsAtivoExpediente INTO vStsAtivoExpediente
@@ -445,6 +454,7 @@ END
 $$
 
 delimiter $$
+
 CREATE PROCEDURE spListarExpedientes(
 	IN pIdUser BIGINT
 )
@@ -454,28 +464,31 @@ BEGIN
 	SELECT if(COUNT(u.IdUser) <> 1, 0 , u.IdUser) INTO vIdUser
 	FROM users u
 	WHERE pIduser = u.IdUser
-	AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMIN')
 	GROUP BY(u.IdUser);
 	
 	if vIdUser = pIdUser then
 		SELECT e.IdExpediente,
-			 	 e.DtExpediente,
-			 	 e.HrExpediente
+			 	 sfFormatarDiaSemana(e.DtExpediente) AS 'DtExpediente',
+			 	 e.HrInicioExpediente,
+			 	 e.HrFinalExpediente
 		FROM expediente e JOIN users u
 								ON e.IdUser = u.IdUser
 		WHERE e.IdUser = vIdUser
 		ORDER BY e.DtExpediente ASC,
-					e.HrExpediente ASC;
+					e.HrInicioExpediente ASC;
 	END if;
 END
 $$
 
-
 delimiter $$
-CREATE PROCEDURE spRegistrarConsulta(
+
+CREATE PROCEDURE spAdicionarConsulta(
 	IN pIdPaciente BIGINT,
 	IN pIdEspecialista BIGINT,
 	IN pDtConsulta DATE,
+	IN pDiaSemanaConsulta SMALLINT,
 	IN pHrConsulta TIME,
 	IN pInfoConsluta TEXT
 )
@@ -487,7 +500,8 @@ BEGIN
 	FROM users u
 	WHERE pIdPaciente = u.IdUser
 	AND u.StsAtivoUser = 's'
-	AND u.RulesUser = 'RULE_PACIENTE'
+	AND (u.RulesUser = 'RULE_PACIENTE'
+	OR u.RulesUser = 'RULE_ADMIN')
 	GROUP BY(u.IdUser);
 	
 	if vIdPaciente = pIdPaciente then
@@ -495,7 +509,8 @@ BEGIN
 		FROM users u
 		WHERE pIdEspecialista = u.IdUser
 		AND u.StsAtivoUser = 's'
-		AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+		AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+		OR u.RulesUser = 'RULE_ADMIN')
 		GROUP BY(u.IdUser);
 	END if;
 	
@@ -503,21 +518,22 @@ BEGIN
 		SELECT if(COUNT(e.IdUser) <> 1, 0 , e.IdUser) INTO vIdEspecialista
 		FROM expediente e
 		WHERE pIdEspecialista = e.IdUser
-		AND pDtConsulta = e.DtExpediente
-		AND pHrConsulta = e.HrExpediente
+		AND pDiaSemanaConsulta = e.DtExpediente
+		AND pHrConsulta >= e.HrInicioExpediente
+		AND pHrConsulta <= e.HrFinalExpediente
 		AND e.StsAtivoExpediente = 's'
 		GROUP BY(e.IdUser);
 	END if;
 	
 	if vIdEspecialista = pIdEspecialista then
-		INSERT INTO consultas(IdPaciente, IdEspecialista, DtConsulta, HrConsulta, InfoConsulta)
-		VALUES (pIdPaciente, pIdEspecialista, pDtConsulta, pHrConsulta, pInfoConsluta);
+		INSERT INTO consultas(IdPaciente, IdEspecialista, DtConsulta, DiaSemanaConsulta, HrConsulta, InfoConsulta)
+		VALUES (pIdPaciente, pIdEspecialista, pDtConsulta, pDiaSemanaConsulta, pHrConsulta, pInfoConsluta);
 	END if;
 END 
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spListarConsultasNaoConfirmadas(
 	IN pIdEspecialista BIGINT
 )
@@ -528,7 +544,8 @@ BEGIN
 	FROM users u
 	WHERE pIdEspecialista = u.IdUser
 	AND u.StsAtivoUser = 's'
-	AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMIN')
 	GROUP BY(u.IdUser);
 	
 	if vIdEspecialista = pIdEspecialista then
@@ -536,6 +553,7 @@ BEGIN
 				 pac.NomeUser,
 				 pac.EmailUser,
 				 c.DtConsulta,
+			 	 sfFormatarDiaSemana(c.DiaSemanaConsulta) AS 'DiaSemanaConsulta',
 				 c.HrConsulta,
 				 esp.NomeUser,
 				 c.InfoConsulta
@@ -548,8 +566,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spListarConsultasConfirmadasPorPaciente(
 	IN pIdPaciente BIGINT
 )
@@ -568,6 +586,7 @@ BEGIN
 				 pac.NomeUser,
 				 pac.EmailUser,
 				 c.DtConsulta,
+			 	 sfFormatarDiaSemana(c.DiaSemanaConsulta) AS 'DiaSemanaConsulta',
 				 c.HrConsulta,
 				 esp.NomeUser,
 				 c.InfoConsulta
@@ -581,8 +600,42 @@ BEGIN
 END
 $$
 
+delimiter $$
+
+CREATE PROCEDURE spListarConsultasConfirmadasPorEspecialista(
+	IN pIdEspecialista BIGINT
+)
+BEGIN
+	DECLARE vIdEspecialista BIGINT DEFAULT 0;
+	
+	SELECT if(COUNT(u.IdUser) <> 1, 0 , u.IdUser) INTO vIdEspecialista
+	FROM users u
+	WHERE pIdEspecialista = u.IdUser
+	AND u.StsAtivoUser = 's'
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMINISTRADOR') 
+	GROUP BY(u.IdUser);
+	
+	if vIdEspecialista = pIdEspecialista then
+		SELECT c.IdConsulta,
+				 pac.NomeUser,
+				 pac.EmailUser,
+				 c.DtConsulta,
+			 	 sfFormatarDiaSemana(c.DiaSemanaConsulta) AS 'DiaSemanaConsulta',
+				 c.HrConsulta,
+				 c.InfoConsulta
+		FROM consultas c JOIN users pac
+							  ON c.IdPaciente = pac.IdUser
+							  JOIN users esp
+							  ON c.IdEspecialista = esp.IdUser					
+		WHERE c.StsAtivoConsulta = 's'
+		AND pIdEspecialista = esp.IdUser;
+	END if;
+END
+$$
 
 delimiter $$
+
 CREATE PROCEDURE spAtivarConsulta(
 	IN pIdConsulta BIGINT
 )
@@ -602,6 +655,26 @@ BEGIN
 END
 $$
 
+delimiter $$
+
+CREATE PROCEDURE spDesativarConsulta(
+	IN pIdConsulta BIGINT
+)
+BEGIN
+	DECLARE vIdConsulta BIGINT DEFAULT 0;
+	
+	SELECT if(COUNT(c.IdConsulta) <> 1, 0 , c.IdConsulta) INTO vIdConsulta
+	FROM consultas c
+	WHERE pIdConsulta = c.IdConsulta
+	GROUP BY(c.IdConsulta);
+	
+	if vIdConsulta = pIdConsulta then
+		UPDATE consultas
+		SET StsAtivoConsulta = 'n'
+		WHERE IdConsulta = vIdConsulta;
+	END if;
+END
+$$
 
 DELIMITER $$
 CREATE PROCEDURE spAdicionarEvento(
@@ -626,8 +699,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spListarEventosAtivos()
 BEGIN
 	SELECT e.IdEvento,
@@ -646,8 +719,28 @@ BEGIN
 END
 $$
 
+delimiter $$
+
+CREATE PROCEDURE spListarEventosDesativos()
+BEGIN
+	SELECT e.IdEvento,
+			 e.NomeEvento,
+			 u.NomeUser,
+			 e.DtEvento,
+			 e.HrEvento,
+			 e.LocalEvento,
+			 e.InfoEvento,
+			 e.ImgUrlEvento
+	FROM usereventos ue JOIN users u
+							  ON ue.IdUser = u.IdUser
+							  JOIN eventos e
+							  ON ue.IdEvento = e.IdEvento
+	WHERE e.StsAtivoEvento = 'n';
+END
+$$
 
 delimiter $$
+
 CREATE PROCEDURE spListarTodosEventos()
 BEGIN
 	SELECT e.IdEvento,
@@ -666,8 +759,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spDesativarEvento(
 	pIdEvento BIGINT
 )
@@ -678,8 +771,8 @@ BEGIN
 END
 $$
 
-
 delimiter $$
+
 CREATE PROCEDURE spAtivarEvento(
 	pIdEvento BIGINT
 )
@@ -690,8 +783,30 @@ BEGIN
 END
 $$
 
+delimiter $$
+
+CREATE PROCEDURE spAtualizarImgEvento(
+	IN pIdEvento BIGINT,
+	IN pImgUrlEvento TEXT
+)
+BEGIN
+	DECLARE vIdEvento BIGINT DEFAULT 0;
+	
+	SELECT if(COUNT(e.IdEvento) <> 1, 0, e.IdEvento) INTO vIdEvento
+	FROM eventos e
+	WHERE pIdEvento = e.IdEvento
+	GROUP BY(e.IdEvento);
+	
+	if vIdEvento = pIdEvento then
+		UPDATE eventos 
+		SET ImgUrlEvento = pImgUrlEvento
+		WHERE IdEvento = vIdEvento;
+	END if;
+END 
+$$
 
 delimiter $$
+
 CREATE FUNCTION sfFormatarCpfOuCnpj(
 	pCpfOrCnpjUser VARCHAR(20)
 )
@@ -724,6 +839,7 @@ END
 $$
 
 delimiter $$
+
 CREATE FUNCTION sfFormatarTel(
 	pTelUser VARCHAR(20)
 )
@@ -747,6 +863,7 @@ END
 $$
 
 delimiter $$
+
 CREATE FUNCTION sfFormatarCrp(
 	pCrpUser VARCHAR(10)
 )
@@ -767,118 +884,27 @@ BEGIN
 END
 $$
 
-
-
--- Criação das Triggers
-
-
 delimiter $$
-CREATE TRIGGER trDesativarExpedienteAposConsulta
-AFTER INSERT ON consultas
-FOR EACH ROW
+
+CREATE FUNCTION sfFormatarDiaSemana(
+	pDiaSemana SMALLINT
+)
+RETURNS VARCHAR(20)
+DETERMINISTIC
 BEGIN
-	UPDATE expediente
-	SET StsAtivoExpediente = 'n'
-   WHERE IdUser = NEW.IdEspecialista
-   AND DtExpediente = NEW.DtConsulta
-   AND HrExpediente = NEW.HrConsulta;
+   DECLARE vNomeDia VARCHAR(20);
+
+   CASE pDiaSemana
+   	WHEN 0 THEN SET vNomeDia = 'Segunda-feira';
+   	WHEN 1 THEN SET vNomeDia = 'Terça-feira';
+   	WHEN 2 THEN SET vNomeDia = 'Quarta-feira';
+   	WHEN 3 THEN SET vNomeDia = 'Quinta-feira';
+   	WHEN 4 THEN SET vNomeDia = 'Sexta-feira';
+   	WHEN 5 THEN SET vNomeDia = 'Sábado';
+   	WHEN 6 THEN SET vNomeDia = 'Domingo';
+   	ELSE SET vNomeDia = 'Dia Inválido';
+   	END CASE;
+   	
+   RETURN vNomeDia;
 END
 $$
-
-
-
--- Criação das Views
-
-
-CREATE VIEW vwEspecialistas_Ativos AS
-SELECT u.IdUser AS 'ID do Especialista',
-		 u.NomeUser AS 'Nome do Especialista',
-		 u.EmailUser AS 'Email do Especialista',
-		 sfFormatarTel(u.TelUser) AS 'Telefone do Especialista',
-		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Especialista',
-		 sfFormatarCrp(u.CrpUser) AS 'CRP do Especialista',
-		 u.ImgUrlUser AS 'Imagem do Especialista',
-		 u.GenUser AS 'Gênero do Especialista',
-		 u.PronomeUser AS 'Pronome do Especialista'
-FROM users u
-WHERE u.StsAtivoUser = 's'
-AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO';
-
-
-CREATE VIEW vwEspecialistas_Pendentes AS
-SELECT u.IdUser AS 'ID do Especialista',
-		 u.NomeUser AS 'Nome do Especialista',
-		 u.EmailUser AS 'Email do Especialista', 
-		 sfFormatarTel(u.TelUser) AS 'Telefone do Especialista',
-		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Especialista',
-		 sfFormatarCrp(u.CrpUser) AS 'CRP do Especialista',
-		 u.ImgUrlUser AS 'Imagem do Especialista',
-		 u.GenUser AS 'Gênero do Especialista',
-		 u.PronomeUser AS 'Pronome do Especialista'
-FROM users u
-WHERE u.StsAtivoUser = 's'
-AND u.RulesUser = 'RULE_ESPECIALISTA_PENDENTE';
-
-CREATE VIEW vwPacientes AS
-SELECT u.IdUser AS 'ID do Paciente',
-		 u.NomeUser AS 'Nome do Paciente',
-		 u.EmailUser AS 'Email do Paciente', 
-		 sfFormatarTel(u.TelUser) AS 'Telefone do Paciente',
-		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Paciente',
-		 u.GenUser AS 'Gênero do Paciente',
-		 u.PronomeUser AS 'Pronome do Paciente'
-FROM users u
-WHERE u.StsAtivoUser = 's'
-AND u.RulesUser = 'RULE_PACIENTE';
-
-
-CREATE VIEW vwUsuarios_Excluidos AS
-SELECT u.IdUser AS 'ID do Usuário',
-		 u.NomeUser AS 'Nome do Usuário',
-		 u.EmailUser AS 'Email do Usuário',
-		 sfFormatarTel(u.TelUser) AS 'Telefone do Usuário',
-		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Usuário',
-		 u.GenUser AS 'Gênero do Usuário',
-		 u.PronomeUser AS 'Pronome do Usuário'
-FROM users u
-WHERE u.StsAtivoUser = 'n';
-
-CREATE VIEW vwExpedientes AS 
-SELECT e.IdExpediente AS 'Id do Expediente',
-		 u.NomeUser AS 'Nome do Especialista',
-		 e.DtExpediente AS 'Data do Expediente',
-		 e.HrExpediente AS 'Hora do Expediente',
-		 e.StsAtivoExpediente AS 'Status do Expediente'
-FROM expediente e JOIN users u
-						ON e.IdUser = u.IdUser
-ORDER BY e.DtExpediente ASC,
-			e.HrExpediente ASC;
-	
-			
-CREATE VIEW vwConsultas_Nao_Confirmadas AS	
-SELECT c.IdConsulta AS 'Id da Consulta',
-		 pac.NomeUser 'Nome do Paciente',
-		 pac.EmailUser AS 'Email do Paciente',
-		 esp.NomeUser AS 'Nome do Especialista',
-		 c.DtConsulta AS 'Data da Consulta',
-		 c.HrConsulta AS 'Hora da Consulta',
-		 c.InfoConsulta AS 'Info da Consulta'
-		FROM consultas c JOIN users pac
-							ON c.IdPaciente = pac.IdUser
-							JOIN users esp
-							ON c.IdEspecialista = esp.IdUser
-		WHERE c.StsAtivoConsulta = 'n';
-		
-CREATE VIEW vwConsultas_Confirmadas AS
-SELECT c.IdConsulta AS 'Id da Consulta',
-		 pac.NomeUser 'Nome do Paciente',
-		 pac.EmailUser AS 'Email do Paciente',
-		 esp.NomeUser AS 'Nome do Especialista',
-		 c.DtConsulta AS 'Data da Consulta',
-		 c.HrConsulta AS 'Hora da Consulta',
-		 c.InfoConsulta AS 'Info da Consulta'
-		FROM consultas c JOIN users pac
-							ON c.IdPaciente = pac.IdUser
-							JOIN users esp
-							ON c.IdEspecialista = esp.IdUser
-		WHERE c.StsAtivoConsulta = 's';

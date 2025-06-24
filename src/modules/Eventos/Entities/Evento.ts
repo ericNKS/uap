@@ -1,19 +1,23 @@
-export default class Consulta {
-    public idevento: number = 0
-    public dtevento: Date = new Date();
-    public hrevento: string = '';
-    public localevento: string = '';
-    public infoevento: string = '';
-    public imgurlevento?: string = '';
+export default class Evento {
+    public IdEvento: number = 0;
+    public NomeEvento: string = '';
+    public DtEvento: Date = new Date();
+    public HrEvento: string = '';
+    public LocalEvento: string = '';
+    public InfoEvento: string = '';
+    public ImgUrlEvento: string = '';
+    public StsAtivoEvento: string = '';
 
     public toJson(): Record<string, any> {
         return {
-            idevento: this.idevento,
-            dtevento: this.dtevento.toISOString(),
-            hrevento: this.hrevento,
-            localevento: this.localevento,
-            infoevento: this.infoevento,
-            imgurlevento: this.imgurlevento || ''
+            IdEvento: this.IdEvento,
+            NomeEvento: this.NomeEvento,
+            DtEvento: this.DtEvento.toISOString(),
+            HrEvento: this.HrEvento,
+            LocalEvento: this.LocalEvento,
+            InfoEvento: this.InfoEvento,
+            ImgUrlEvento: this.ImgUrlEvento || '',
+            StsAtivoEvento: this.StsAtivoEvento,
         }
     }
 }

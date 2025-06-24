@@ -1,19 +1,19 @@
 export interface IOfficeHoursToAdd {
-    idUser: number
-    dtExpediente: Date
-    hrExpediente: string
-    stsAtivoExpediente: string
+    IdUser: number
+    DtExpediente: number
+    HrInicioExpediente: string
+    HrFinalExpediente: string
 }
 
 
 
 export interface IOfficeHours {
-    dtExpediente: Date
-    hrExpediente: string
-    stsAtivoExpediente: string
+    DtExpediente: number
+    HrInicioExpediente: string
+    HrFinalExpediente: string
 }
 
 export interface IOfficeHoursToAddService {
-    idUser: number
-    officeHours: Array<IOfficeHours>
+    IdUser: number
+    OfficeHours: Array<IOfficeHours>
 }

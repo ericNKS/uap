@@ -3,6 +3,8 @@ import AuthController from "../modules/Auth/Controller/AuthController";
 import UserController from "../modules/Auth/Controller/UserController";
 import AuthMiddleware from "../config/Middleware/AuthMiddleware";
 import ImageController from "../modules/File/Controller/ImageController";
+import OfficeHoursController from "../modules/Consulta/Controller/OfficeHoursController";
+import ConsultaController from "../modules/Consulta/Controller/ConsultasController";
 
 const handleRule = (rules?: Array<string>): Record<string, any> => {
     let middleware = new AuthMiddleware(rules || []);
@@ -27,6 +29,20 @@ export const PrivateRoute = (app: FastifyInstance) => {
     app.patch('/api/users', handleRule(), UserController.update.bind(UserController));
     app.patch('/api/users/image', handleRule(), UserController.updateImage.bind(UserController));
     app.patch('/api/users/password', handleRule(), UserController.updatePassword.bind(UserController));
+
+    // Office Hours
+    app.get('/api/expedientes/:especialista', handleRule(), OfficeHoursController.list.bind(OfficeHoursController));
+
+    // Consultas
+    app.post('/api/consultas', handleRule(), ConsultaController.store.bind(ConsultaController));
+}
+
+export const EspecialistaRoute = (app:FastifyInstance) => {
+    // Office Hours
+    const rule = ['RULE_ADMIN', 'RULE_ESPECIALISTA_ATIVO'];
+
+    app.post('/api/expedientes', handleRule(rule), OfficeHoursController.store.bind(OfficeHoursController));
+    app.patch('/api/expedientes/:id', handleRule(rule), OfficeHoursController.changeStatusOfficeHours.bind(OfficeHoursController));
 }
 
 export const AdminRoute = (app: FastifyInstance) => {
