@@ -814,7 +814,7 @@ BEGIN
 	
 	SELECT if(COUNT(u.IdUser) <> 1, 0 , u.IdUser) INTO vIdPaciente
 	FROM users u
-	WHERE pIdEspecialista = u.IdUser
+	WHERE pIdPaciente = u.IdUser
 	AND u.StsAtivoUser = 's'
 	AND u.RulesUser = 'RULE_PACIENTE'
 	GROUP BY(u.IdUser);
