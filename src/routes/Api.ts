@@ -35,6 +35,8 @@ export const PrivateRoute = (app: FastifyInstance) => {
 
     // Consultas
     app.post('/api/consultas', handleRule(), ConsultaController.store.bind(ConsultaController));
+    app.post('/api/consultas/:id/ativar', handleRule(), ConsultaController.active.bind(ConsultaController));
+    app.post('/api/consultas/:id/desativar', handleRule(), ConsultaController.disable.bind(ConsultaController));
 }
 
 export const EspecialistaRoute = (app:FastifyInstance) => {
@@ -43,6 +45,10 @@ export const EspecialistaRoute = (app:FastifyInstance) => {
 
     app.post('/api/expedientes', handleRule(rule), OfficeHoursController.store.bind(OfficeHoursController));
     app.patch('/api/expedientes/:id', handleRule(rule), OfficeHoursController.changeStatusOfficeHours.bind(OfficeHoursController));
+
+    app.get('/api/consultas/nao-confirmadas', handleRule(rule), ConsultaController.listNotConfirmed.bind(ConsultaController));
+    app.get('/api/consultas/paciente/confirmadas', handleRule(rule), ConsultaController.listPacienteConfirmed.bind(ConsultaController));
+    app.get('/api/consultas/especialista/confirmadas', handleRule(rule), ConsultaController.listEspecialistaConfirmed.bind(ConsultaController));
 }
 
 export const AdminRoute = (app: FastifyInstance) => {

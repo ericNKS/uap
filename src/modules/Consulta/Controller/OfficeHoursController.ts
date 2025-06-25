@@ -42,11 +42,11 @@ export default class OfficeHoursController {
 
             })
 
-            return reply.send({
+            return reply.code(201).send({
                 success: 'Expedientes salvo com sucesso!'
             });
         } catch (error) {
-            return reply.send({
+            return reply.code(500).send({
                 error: 'Algo inesperado aconteceu, tente novamente mais tarde'
             });
         }
@@ -75,7 +75,7 @@ export default class OfficeHoursController {
                 expedientes
             });
         } catch (error) {
-            return reply.send({
+            return reply.code(500).send({
                 error: 'Algo inesperado aconteceu, tente novamente mais tarde'
             });
         }
@@ -100,7 +100,7 @@ export default class OfficeHoursController {
                 success: 'Status atualizado com sucesso'
             });
         } catch (error) {
-            return reply.send({
+            return reply.code(500).send({
                 error: 'Algo inesperado aconteceu, tente novamente mais tarde'
             });
         }
