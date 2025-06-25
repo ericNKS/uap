@@ -40,39 +40,25 @@ export default class ConsultaController {
         }
     }
 
-    public static async listEspecialistaConfirmed(
+    public static async listConfirmed(
         req: FastifyRequest,
         reply: FastifyReply
     ) {
-
         const IdUser = req.user.IdUser;
 
         const addConsulta = new ListAppointmentConfirmed(this.repository)
         
         try {
-            const consultas = await addConsulta.especialista(IdUser);
+            const isEspecialista = req.user.rules.includes('RULE_ESPECIALISTA_ATIVO')
+            
+            if(isEspecialista){
+                const consultas = await addConsulta.especialista(IdUser);
+                return reply.send(consultas);
+            }
 
-            return reply.send(consultas);
-        } catch (error) {
-            return reply.code(500).send({
-                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
-            });
-        }
-    }
-
-    public static async listPacienteConfirmed(
-        req: FastifyRequest,
-        reply: FastifyReply
-    ) {
-
-        const IdUser = req.user.IdUser;
-
-        const addConsulta = new ListAppointmentConfirmed(this.repository)
-        
-        try {
             const consultas = await addConsulta.paciente(IdUser);
-
             return reply.send(consultas);
+
         } catch (error) {
             return reply.code(500).send({
                 error: 'Algo inesperado aconteceu, tente novamente mais tarde'
