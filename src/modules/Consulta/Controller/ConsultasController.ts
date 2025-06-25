@@ -7,6 +7,7 @@ import AddConsultaDTO from "../DTO/AddConsultaDTO";
 import AddConsulta from "../UseCase/AddConsulta";
 import ListAppointmentNotConfirmed from "../UseCase/ListAppointmentNotConfirmed";
 import ListAppointmentConfirmed from "../UseCase/ListAppointmentConfirmed";
+import ChangeAppointmentStatus from "../UseCase/ChangeAppointmentStatus";
 
 export default class ConsultaController {
     private static repository: ConsultaRepository = new ConsultaRepository();
@@ -100,18 +101,21 @@ export default class ConsultaController {
     }
 
     public static async active(
-        req: FastifyRequest,
+        req: FastifyRequest<{
+            Params: {
+                id: number
+            }
+        }>,
         reply: FastifyReply
     ) {
+        const IdConsulta = req.params.id;
 
-        const IdUser = req.user.IdUser;
-
-        const addConsulta = new ListAppointmentNotConfirmed(this.repository)
+        const addConsulta = new ChangeAppointmentStatus(this.repository)
         
         try {
-            const consultas = await addConsulta.execute(IdUser);
+            const consultas = await addConsulta.active(IdConsulta);
 
-            return reply.send(consultas);
+            return reply.code(204).send(consultas);
         } catch (error) {
             return reply.code(500).send({
                 error: 'Algo inesperado aconteceu, tente novamente mais tarde'
@@ -120,22 +124,26 @@ export default class ConsultaController {
     }
 
     public static async disable(
-        req: FastifyRequest,
+        req: FastifyRequest<{
+            Params: {
+                id: number
+            }
+        }>,
         reply: FastifyReply
     ) {
+        const IdConsulta = req.params.id;
 
-        const IdUser = req.user.IdUser;
-
-        const addConsulta = new ListAppointmentNotConfirmed(this.repository)
+        const addConsulta = new ChangeAppointmentStatus(this.repository)
         
         try {
-            const consultas = await addConsulta.execute(IdUser);
+            await addConsulta.disable(IdConsulta);
 
-            return reply.send(consultas);
+            return reply.code(204).send();
         } catch (error) {
             return reply.code(500).send({
                 error: 'Algo inesperado aconteceu, tente novamente mais tarde'
             });
         }
+            
     }
 }
