@@ -37,22 +37,21 @@ export const PrivateRoute = (app: FastifyInstance) => {
     app.post('/api/consultas', handleRule(), ConsultaController.store.bind(ConsultaController));
     app.post('/api/consultas/:id/ativar', handleRule(), ConsultaController.active.bind(ConsultaController));
     app.post('/api/consultas/:id/desativar', handleRule(), ConsultaController.disable.bind(ConsultaController));
+    app.get('/api/consultas/confirmadas', handleRule(), ConsultaController.listConfirmed.bind(ConsultaController));
 }
 
 export const EspecialistaRoute = (app:FastifyInstance) => {
     // Office Hours
-    const rule = ['RULE_ADMIN', 'RULE_ESPECIALISTA_ATIVO'];
+    const rule = ['RULE_ADMINISTRADOR', 'RULE_ESPECIALISTA_ATIVO'];
 
     app.post('/api/expedientes', handleRule(rule), OfficeHoursController.store.bind(OfficeHoursController));
     app.patch('/api/expedientes/:id', handleRule(rule), OfficeHoursController.changeStatusOfficeHours.bind(OfficeHoursController));
 
     app.get('/api/consultas/nao-confirmadas', handleRule(rule), ConsultaController.listNotConfirmed.bind(ConsultaController));
-    app.get('/api/consultas/paciente/confirmadas', handleRule(rule), ConsultaController.listPacienteConfirmed.bind(ConsultaController));
-    app.get('/api/consultas/especialista/confirmadas', handleRule(rule), ConsultaController.listEspecialistaConfirmed.bind(ConsultaController));
 }
 
 export const AdminRoute = (app: FastifyInstance) => {
-    const rule = ['RULE_ADMIN'];
+    const rule = ['RULE_ADMINISTRADOR'];
     app.get('/api/users', handleRule(rule), UserController.index.bind(AuthController));
     app.delete('/api/users/:id', handleRule(rule), UserController.delete.bind(AuthController));
 }

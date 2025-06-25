@@ -58,6 +58,7 @@ export default class AuthMiddleware {
             }
 
             req.user = payload;
+            req.user.rules = userRules;
             req.token = token;
         } catch (error) {
             req.log.error(error);
