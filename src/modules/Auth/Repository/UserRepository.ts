@@ -1,5 +1,5 @@
 import IUserRepository from "../Interfaces/IUserRepository";
-import User from "../Entities/User";
+import User, { IUser } from "../Entities/User";
 import mysql from 'mysql2/promise';
 import { Database } from "../../../config/database/Database";
 
@@ -209,14 +209,14 @@ export default class UserRepository implements IUserRepository {
         }
     }
     
-    async findById(id: number): Promise<User> {
+    async findById(id: number): Promise<IUser> {
         const query = `
             CALL spPegarUserId(?)
         `;
         try {
             const [rows] = await this.db.query(query, [id]);
 
-            const rowsArray = rows as Array<User[]>;
+            const rowsArray = rows as Array<IUser[]>;
             const users = rowsArray[0][0];
             
             return users;

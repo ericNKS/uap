@@ -1,6 +1,8 @@
 import { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from "fastify";
 import JwtToken from "../../modules/Auth/UseCase/JwtToken";
 import RedisService from "../database/RedisService";
+import UserRepository from "../../modules/Auth/Repository/UserRepository";
+import { Database } from "../database/Database";
 
 declare module 'fastify' {
     interface FastifyRequest {
@@ -34,8 +36,10 @@ export default class AuthMiddleware {
             }
 
             const payload = JwtToken.decode(token);
+            const userRepo = new UserRepository(Database);
+            const user = await userRepo.findById(payload.IdUser);
 
-            if (payload.StsVerificarEmail != true) {
+            if (user.StsVerificarEmail != true) {
                 return reply.code(403).send({ error: 'Usuario desativado' });
             }
 
@@ -44,7 +48,7 @@ export default class AuthMiddleware {
                 return reply.code(401).send({ error: 'Token expirado' });
             }
 
-            const userRule = payload.RulesUser;
+            const userRule = user.RulesUser;
             if (!userRule) {
                 return reply.code(403).send({ error: 'Regra de usuário não encontrada no token' });
             }

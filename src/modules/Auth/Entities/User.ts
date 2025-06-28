@@ -1,4 +1,4 @@
-interface IUser {
+export interface IUser {
     IdUser: number,
     NomeUser: string,
     EmailUser: string,
@@ -29,20 +29,20 @@ export default class User {
     public StsVerificarEmail: boolean = false;
     public StsAtivoUser: string = '';
 
-    public toJson(): Record<string, any> {
+    public static toJson(user: IUser): Record<string, any> {
         return {
-            IdUser: this.IdUser,
-            NomeUser: this.NomeUser,
-            EmailUser: this.EmailUser,
-            TelUser: this.TelUser,
-            CpfOrCnpjUser: this.CpfOrCnpjUser,
-            CrpUser: this.CrpUser,
-            ImgUrlUser: this.ImgUrlUser,
-            GenUser: this.GenUser,
-            PronomeUser: this.PronomeUser,
-            RulesUser: this.RulesUser,
-            StsVerificarEmail: this.StsVerificarEmail,
-            StsAtivoUser: this.StsAtivoUser,
+            IdUser: user.IdUser,
+            NomeUser: user.NomeUser,
+            EmailUser: user.EmailUser,
+            TelUser: user.TelUser,
+            CpfOrCnpjUser: user.CpfOrCnpjUser,
+            CrpUser: user.CrpUser,
+            ImgUrlUser: user.ImgUrlUser,
+            GenUser: user.GenUser,
+            PronomeUser: user.PronomeUser,
+            RulesUser: user.RulesUser,
+            StsVerificarEmail: user.StsVerificarEmail,
+            StsAtivoUser: user.StsAtivoUser,
         }
     }
 

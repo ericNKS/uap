@@ -14,6 +14,7 @@ import UpdatePasswordUserDTO from "../DTO/UpdatePasswordUserDTO";
 import { MultipartFile } from "@fastify/multipart";
 import UploadImage from "../../File/UseCase/UploadImage";
 import { uploadDir } from "../../../utils/UploadDir";
+import User from "../Entities/User";
 
 export default class UserController {
     static async index(
@@ -49,7 +50,7 @@ export default class UserController {
         const userRepo = new UserRepository(Database);
         const user = await userRepo.findById(userToken.IdUser);
 
-        return reply.send(user);
+        return reply.send(User.toJson(user));
     }
 
     static async deleteSelf(
