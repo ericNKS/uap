@@ -701,6 +701,22 @@ END
 $$
 
 /*
+	Criação da Procedure spExcluirExpediente, esta 
+	procedure pega o Id do Expediente e exclui o
+	mesmo.
+*/
+
+delimiter $$
+CREATE PROCEDURE spExcluirExpediente(
+	IN pIdExpediente BIGINT
+)
+BEGIN
+	DELETE FROM expediente
+   WHERE IdExpediente = pIdExpediente;
+END
+$$
+
+/*
 	Criação da Procedure spRegistrarConsulta, esta
 	procedure pega o Id do Paciente, o Id do Especialista,
 	a Data, a Hora e a Informação da Consulta e, após 
@@ -1236,6 +1252,70 @@ BEGIN
    	END CASE;
    	
    RETURN vNomeDia;
+END
+$$
+
+
+
+-- Criação das Triggers
+
+
+/*
+	Criação da trigger trg_AjustarExpedienteAposConsulta, esta trigger tem 
+	como objetivo atualizar automaticamente o expediente do especialista, 
+	alterando sua hora e/ou status, após o paciente marcar uma consulta.
+*/
+
+delimiter $$
+
+CREATE TRIGGER trg_AjustarExpedienteAposConsulta
+AFTER UPDATE ON consultas
+FOR EACH ROW
+BEGIN
+    DECLARE v_IdExpediente BIGINT;
+    DECLARE v_HrInicioExpediente TIME;
+    DECLARE v_HrFinalExpediente TIME;
+    DECLARE v_DiaDaSemana SMALLINT;
+    DECLARE v_HrFimConsulta TIME;
+
+    IF NEW.StsAtivoConsulta = 's' AND OLD.StsAtivoConsulta = 'n' THEN
+    
+        SET v_DiaDaSemana = NEW.DiaSemanaConsulta;
+        SET v_HrFimConsulta = ADDTIME(NEW.HrConsulta, '01:00:00');
+
+        SELECT 
+            IdExpediente, HrInicioExpediente, HrFinalExpediente
+        INTO 
+            v_IdExpediente, v_HrInicioExpediente, v_HrFinalExpediente
+        FROM 
+            expediente
+        WHERE 
+            IdUser = NEW.IdEspecialista
+            AND DtExpediente = v_DiaDaSemana
+            AND NEW.HrConsulta >= HrInicioExpediente
+            AND v_HrFimConsulta <= HrFinalExpediente
+            AND StsAtivoExpediente = 's'
+        LIMIT 1;
+        
+        IF v_IdExpediente IS NOT NULL THEN
+            -- CASO 1: A consulta ocupa o expediente INTEIRO
+            IF NEW.HrConsulta = v_HrInicioExpediente AND v_HrFimConsulta = v_HrFinalExpediente THEN
+                UPDATE expediente SET StsAtivoExpediente = 'n' WHERE IdExpediente = v_IdExpediente;
+            
+            -- CASO 2: A consulta é EXATAMENTE NO INÍCIO do expediente.
+            ELSEIF NEW.HrConsulta = v_HrInicioExpediente THEN
+                UPDATE expediente SET HrInicioExpediente = v_HrFimConsulta WHERE IdExpediente = v_IdExpediente;
+            -- CASO 3: A consulta é EXATAMENTE NO FINAL do expediente.
+            ELSEIF v_HrFimConsulta = v_HrFinalExpediente THEN
+                UPDATE expediente SET HrFinalExpediente = NEW.HrConsulta WHERE IdExpediente = v_IdExpediente;
+            -- CASO 4: A consulta está no MEIO do expediente.
+            ELSE
+                UPDATE expediente SET HrFinalExpediente = NEW.HrConsulta WHERE IdExpediente = v_IdExpediente;
+                INSERT INTO expediente (IdUser, DtExpediente, HrInicioExpediente, HrFinalExpediente, StsAtivoExpediente)
+                VALUES (NEW.IdEspecialista, v_DiaDaSemana, v_HrFimConsulta, v_HrFinalExpediente, 's');
+            END IF;
+        END IF;
+    END IF; 
 END
 $$
 
