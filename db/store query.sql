@@ -22,6 +22,7 @@ SenhaUser VARCHAR(100) NOT NULL,
 TelUser VARCHAR(20),
 CpfOrCnpjUser VARCHAR(20) NOT NULL,
 CrpUser VARCHAR(10),
+DescricaoUser TEXT,
 ImgUrlUser TEXT,
 GenUser VARCHAR(30) NOT NULL,
 PronomeUser VARCHAR(10) NOT NULL,
@@ -299,6 +300,35 @@ END
 $$
 
 /*
+	Criação da Procedure spAdicionarDescricao, esta
+	procedure pega o ID do Psicólogo e, após verificar 
+	que o mesmo existe, ele atualiza a descrição do 
+	psicólogo no Banco de Dados.
+*/
+
+delimiter $$
+CREATE PROCEDURE spAdicionarDescricao(
+	IN pIdUser BIGINT,
+	IN pDescricaoUser TEXT
+)
+BEGIN
+	DECLARE vIdUser BIGINT DEFAULT 0;
+	SELECT if(COUNT(u.IdUser) <> 1,0, u.IdUser) INTO vIdUser 
+	FROM users u
+	WHERE pIdUser = u.IdUser
+	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
+	OR u.RulesUser = 'RULE_ADMIN')
+	GROUP BY (u.IdUser);
+	
+	if vIdUser = pIdUser then
+		UPDATE users
+		SET DescricaoUser = pDescricaoUser
+		WHERE IdUser = vIdUser;
+	END if;
+END
+$$
+
+/*
 	Criação da Procedure spExcluirUsuarios, esta
 	procedure pega o ID do Usuário e o exclui de
 	forma lógica, atualizando o campo 'StsAtivoUser'
@@ -332,6 +362,7 @@ BEGIN
 			 u.EmailUser, 
 			 sfFormatarTel(u.TelUser) AS 'TelUser',
 			 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CpfOrCnpjUser',
+			 u.ImgUrlUser,
 			 u.GenUser,
 			 u.pPronomeUser
 	FROM users u
@@ -357,6 +388,7 @@ BEGIN
 			 sfFormatarTel(u.TelUser) AS 'TelUser',
 			 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CpfOrCnpjUser',
 			 sfFormatarCrp(u.CrpUser) AS 'CrpUser',
+			 u.DescricaoUser,
 			 u.ImgUrlUser,
 			 u.GenUser,
 			 u.pPronomeUser
@@ -383,6 +415,7 @@ BEGIN
 			 sfFormatarTel(u.TelUser) AS 'TelUser',
 			 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CpfOrCnpjUser',
 			 sfFormatarCrp(u.CrpUser) AS 'CrpUser',
+			 u.DescricaoUser,
 			 u.ImgUrlUser,
 			 u.GenUser,
 			 u.pPronomeUser
@@ -440,6 +473,7 @@ BEGIN
 				 u.NomeUser,
 				 u.EmailUser,
 				 u.SenhaUser,
+				 u.DescricaoUser,
 				 u.ImgUrlUser,
 				 u.GenUser,
 				 u.PronomeUser,
@@ -509,6 +543,7 @@ BEGIN
 				 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS CpfOrCnpjUser,
 				 sfFormatarTel(u.TelUser) AS TelUser,
 				 sfFormatarCrp(u.CrpUser) AS CrpUser,
+				 u.DescricaoUser,
 				 u.ImgUrlUser,
 				 u.GenUser,
 				 u.PronomeUser,
@@ -873,7 +908,7 @@ BEGIN
 	WHERE pIdEspecialista = u.IdUser
 	AND u.StsAtivoUser = 's'
 	AND (u.RulesUser = 'RULE_ESPECIALISTA_ATIVO'
-	OR u.RulesUser = 'RULE_ADMINISTRADOR') 
+	OR u.RulesUser = 'RULE_ADMIN') 
 	GROUP BY(u.IdUser);
 	
 	if vIdEspecialista = pIdEspecialista then
@@ -1107,7 +1142,7 @@ CREATE PROCEDURE spAtualizarImgEvento(
 BEGIN
 	DECLARE vIdEvento BIGINT DEFAULT 0;
 	
-	SELECT if(COUNT(e.IdEvento) <> 1, 0, e.IdEvento) INTO vIdEvento
+	SELECT if(COUNT(e.IdEvento) <> 1,0, e.IdEvento) INTO vIdEvento
 	FROM eventos e
 	WHERE pIdEvento = e.IdEvento
 	GROUP BY(e.IdEvento);
@@ -1337,6 +1372,7 @@ SELECT u.IdUser AS 'ID do Especialista',
 		 sfFormatarTel(u.TelUser) AS 'Telefone do Especialista',
 		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Especialista',
 		 sfFormatarCrp(u.CrpUser) AS 'CRP do Especialista',
+		 u.DescricaoUser AS 'Descrição do Especialista',
 		 u.ImgUrlUser AS 'Imagem do Especialista',
 		 u.GenUser AS 'Gênero do Especialista',
 		 u.PronomeUser AS 'Pronome do Especialista'
@@ -1358,6 +1394,7 @@ SELECT u.IdUser AS 'ID do Especialista',
 		 sfFormatarTel(u.TelUser) AS 'Telefone do Especialista',
 		 sfFormatarCpfOuCnpj(u.CpfOrCnpjUser) AS 'CPF/CNPJ do Especialista',
 		 sfFormatarCrp(u.CrpUser) AS 'CRP do Especialista',
+		 u.DescricaoUser AS 'Descrição do Especialista',
 		 u.ImgUrlUser AS 'Imagem do Especialista',
 		 u.GenUser AS 'Gênero do Especialista',
 		 u.PronomeUser AS 'Pronome do Especialista'
