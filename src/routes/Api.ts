@@ -42,7 +42,7 @@ export const PrivateRoute = (app: FastifyInstance) => {
 
 export const EspecialistaRoute = (app:FastifyInstance) => {
     // Office Hours
-    const rule = ['RULE_ADMINISTRADOR', 'RULE_ESPECIALISTA_ATIVO'];
+    const rule = ['RULE_ADMIN', 'RULE_ESPECIALISTA_ATIVO'];
 
     app.post('/api/expedientes', handleRule(rule), OfficeHoursController.store.bind(OfficeHoursController));
     app.patch('/api/expedientes/:id', handleRule(rule), OfficeHoursController.changeStatusOfficeHours.bind(OfficeHoursController));
@@ -53,7 +53,7 @@ export const EspecialistaRoute = (app:FastifyInstance) => {
 }
 
 export const AdminRoute = (app: FastifyInstance) => {
-    const rule = ['RULE_ADMINISTRADOR'];
+    const rule = ['RULE_ADMIN'];
     app.get('/api/users', handleRule(rule), UserController.index.bind(AuthController));
     app.delete('/api/users/:id', handleRule(rule), UserController.delete.bind(AuthController));
 }
