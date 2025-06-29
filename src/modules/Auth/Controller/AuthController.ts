@@ -48,7 +48,7 @@ export default class AuthController {
             const sendMailService = new SendMail();
             const generateAccountActivationToken = new GenerateAccountActivationToken(RedisService.getInstance(), sendMailService);
             
-            generateAccountActivationToken.execute(user);
+            await generateAccountActivationToken.execute(user);
             
             return reply.code(201).send({
                 success: 'Foi enviado um email para verificar a conta'
