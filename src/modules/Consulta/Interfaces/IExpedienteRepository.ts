@@ -5,4 +5,5 @@ export default interface IExpedienteRepository {
     adicionarExpediente: (expediente: IOfficeHoursToAdd) => Promise<void>
     listarExpedientes: (IdUser: number) => Promise<Array<Expediente>>
     changeStatusExpediente: (IdUser: number, IdExpediente: number) => Promise<void>
+    excluirExpediente: (IdExpediente: number) => Promise<void>
 }

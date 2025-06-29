@@ -55,4 +55,18 @@ export default class ExpedienteRepository implements IExpedienteRepository{
             throw error;
         }
     }
+
+    public async excluirExpediente(IdExpediente: number): Promise<void> {
+        const query = `
+            CALL spExcluirExpediente(?)
+        `;
+
+        try {
+            await this.db.query(query, [
+                IdExpediente
+            ]);
+        } catch (error) {
+            throw error;
+        }
+    }
 }

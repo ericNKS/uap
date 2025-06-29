@@ -10,6 +10,7 @@ import ListOfficeHours from "../UseCase/ListOfficeHours";
 import UserRepository from "../../Auth/Repository/UserRepository";
 import { Database } from "../../../config/database/Database";
 import ActiveDesativeOfficeHours from "../UseCase/ActiveDesativeOfficeHours";
+import RemoveOfficeHours from "../UseCase/RemoveOfficeHours";
 
 export default class OfficeHoursController {
     private static repository: ExpedienteRepository = new ExpedienteRepository();
@@ -104,5 +105,21 @@ export default class OfficeHoursController {
                 error: 'Algo inesperado aconteceu, tente novamente mais tarde'
             });
         }
+    }
+
+    public static async delete(
+        req: FastifyRequest<{
+            Params: {
+                id: number
+            }
+        }>,
+        reply: FastifyReply
+    ) {
+        const IdExpediente = req.params.id;
+        const service = new RemoveOfficeHours(this.repository);
+
+        await service.execute(IdExpediente);
+
+        return reply.code(204).send();
     }
 }
