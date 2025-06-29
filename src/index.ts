@@ -1,11 +1,19 @@
 import 'reflect-metadata';
 import fastify from "fastify";
 import multipart from '@fastify/multipart';
-import { PrivateRoute, AdminRoute, PublicRoute } from "./routes/Api";
+import { PrivateRoute, AdminRoute, PublicRoute, EspecialistaRoute } from "./routes/Api";
+import { Database } from './config/database/Database';
+import dotenv from 'dotenv';
+import cors from '@fastify/cors';
+
+
+dotenv.config()
 
 const app = fastify({
     logger: true
 });
+
+
 
 app.addContentTypeParser('application/json', { parseAs: 'string' }, function (_, body, done) {
     try {
@@ -31,14 +39,29 @@ app.register(multipart, {
 });
 app.register(PrivateRoute);
 app.register(AdminRoute);
+app.register(EspecialistaRoute);
 app.register(PublicRoute);
+app.register(cors, {
+    origin: true,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+    credentials: true
+})
 
 const start = async () => {
+
+    let connection;
+    
     try {
+        const dbName = process.env.DB_NAME || 'uap';
+
+        connection = await Database.getConnection();
+        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
+
+        if (connection) connection.release();
         await app.listen({ 
             port: 3000,
             host: '0.0.0.0'
-        })
+        });
     } catch (err) {
         app.log.error(err)
         process.exit(1)

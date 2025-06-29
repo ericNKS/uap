@@ -36,8 +36,7 @@ export default class SendMail {
         if(!host || !from || !port || !password || !urlEmailService) {
             throw new Error('Não é possível enviar email sem o remetente completo');
         }
-        console.log('url');
-        console.log(urlEmailService);
+        
         this.urlEmailService = urlEmailService;
 
         this.remetente = {

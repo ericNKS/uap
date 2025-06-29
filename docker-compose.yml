@@ -1,4 +1,25 @@
 services:
+
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-!ChangeMe!}
+      MYSQL_USER: ${DB_USER:-app}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-!ChangeMe!}
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USER:-app}", "-p${DB_PASSWORD:-!ChangeMe!}"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - database_data:/var/lib/mysql:rw
+      - ./db:/docker-entrypoint-initdb.d:ro
+    networks:
+      - database_network
+      
   redis:
     image: redis:latest
     ports:
@@ -34,14 +55,20 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - redis
-      - api-send-mail
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started 
+      api-send-mail:
+        condition: service_started 
     command: npm run dev
     networks:
       - database_network
 
   api-send-mail:
-    build: ../MailGo
+    build:
+      context: ../MailGo
+      dockerfile: Dockerfile.api
     ports:
       - "3030:3000"
     command: /app/api
@@ -51,7 +78,9 @@ services:
       - rabbitmq
 
   service-send-mail:
-    build: ../MailGo
+    build:
+      context: ../MailGo
+      dockerfile: Dockerfile.queue
     command: /app/queue
     networks:
       - database_network
@@ -60,12 +89,11 @@ services:
         condition: service_healthy
       api-send-mail:
         condition: service_started 
-      pride-api:
-        condition: service_started
 
 
 
 volumes:
+  database_data:
   redis-data:
   rabbitmq-data:
   rabbitmq-log:

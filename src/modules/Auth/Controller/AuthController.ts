@@ -7,9 +7,7 @@ import UserRepository from "../Repository/UserRepository";
 import { Database } from "../../../config/database/Database";
 import FormExceptions from "../../../utils/FormExceptions";
 import User from "../Entities/User";
-import JwtToken from "../UseCase/JwtToken";
 import ExceptionValidation from "../Utils/ExceptionValidation";
-import UserResponse from "../DTO/UserResponse";
 import { LoginDTO } from "../DTO/LoginDTO";
 import LoginUser from "../UseCase/LoginUser";
 import ExceptionNotFound from "../Utils/ExceptionNotFound";
@@ -17,6 +15,7 @@ import RevokeToken from "../UseCase/RevokeToken";
 import RedisService from "../../../config/database/RedisService";
 import GenerateAccountActivationToken from "../UseCase/GenerateAccountActivationToken";
 import ActiveAccount from "../UseCase/ActiveAccount";
+import SendMail from "../../../UseCase/SendMail";
 
 export default class AuthController {
     static async register(
@@ -29,7 +28,7 @@ export default class AuthController {
             const err = FormExceptions(validationsErr);
             
             if(err) {
-                return reply.code(400).send({ err });
+                return reply.code(400).send(err);
             }
             
             const userRepository = new UserRepository(Database);
@@ -37,18 +36,19 @@ export default class AuthController {
             const createUserService = new CreateUserPaciente(userRepository);
             
             let user: User;
-            switch (userData.userType) {
-                case 'especialista':
+            switch (userData.RulesUser) {
+                case 'RULE_ESPECIALISTA':
                     user = await createUserService.especialista(userData);
                     break;
                 default:
                     user = await createUserService.paciente(userData);
                     break;
             }
-
-            const generateAccountActivationToken = new GenerateAccountActivationToken(RedisService.getInstance());
-            await generateAccountActivationToken.execute(user);
-
+            
+            const sendMailService = new SendMail();
+            const generateAccountActivationToken = new GenerateAccountActivationToken(RedisService.getInstance(), sendMailService);
+            
+            generateAccountActivationToken.execute(user);
             
             return reply.code(201).send({
                 success: 'Foi enviado um email para verificar a conta'
@@ -61,7 +61,13 @@ export default class AuthController {
                 });
             }
 
-            return reply.code(500).send({error});
+            if(error instanceof Error) {
+                return reply.code(500).send({
+                    error: error.message
+                });
+            }
+
+            return reply.code(500).send(error);
         }
     }
 
@@ -125,7 +131,7 @@ export default class AuthController {
     }
 
 
-    static async verifyEmail(
+    static async validateEmail(
         req: FastifyRequest<{Params: {token: string}}>,
         reply: FastifyReply
     ) {
@@ -145,10 +151,17 @@ export default class AuthController {
         const activeAccountService = new ActiveAccount(repository);
         
         const idUser = JSON.parse(userToken).idUser;
+
+        if(!idUser) {
+            return reply.code(404).send({
+                error: 'User não encontrado'
+            });
+        }
+        
         await activeAccountService.execute(idUser);
-
+        
+        
         redis.remove(redisName);
-
         return reply.code(204).send();
     }
     

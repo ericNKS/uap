@@ -1,4 +1,5 @@
 import RedisService from "../../../config/database/RedisService";
+import SendMail from "../../../UseCase/SendMail";
 import { LoginDTO } from "../DTO/LoginDTO";
 import User from "../Entities/User";
 import IUserRepository from "../Interfaces/IUserRepository";
@@ -16,7 +17,7 @@ export default class LoginUser {
         generateAccountActivationToken?: GenerateAccountActivationToken
     ) {
         this.generateAccountActivationToken = 
-            generateAccountActivationToken || new GenerateAccountActivationToken(RedisService.getInstance());
+            generateAccountActivationToken || new GenerateAccountActivationToken(RedisService.getInstance(), new SendMail());
     }
 
     public async execute(form: LoginDTO): Promise<string> {
@@ -26,19 +27,19 @@ export default class LoginUser {
     }
 
     private async validateUser(form: LoginDTO): Promise<User> {
-        const userToValidate = await this.userRepository.findByEmail(form.emailUser);
+        const userToValidate = await this.userRepository.findByEmail(form.EmailUser);
 
         if(!userToValidate) {
             throw new ExceptionNotFound("email não encontrado");
         }
         
-        const isPasswordValid = await bcrypt.compare(form.senhaUser, userToValidate.senhauser)
+        const isPasswordValid = await bcrypt.compare(form.SenhaUser, userToValidate.SenhaUser)
 
         if(!isPasswordValid) {
             throw new ExceptionValidation("Senha inválida");
         }
 
-        if(userToValidate.stsativouser !== 's') {
+        if(userToValidate.StsVerificarEmail === false) {
             this.generateAccountActivationToken.execute(userToValidate);
             throw new ExceptionValidation("Conta não validada, verifique o seu email e tente novamente");
         }

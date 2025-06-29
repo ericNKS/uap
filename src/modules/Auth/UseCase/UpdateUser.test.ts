@@ -4,6 +4,7 @@ import User from "../Entities/User";
 import IUserRepository from "../Interfaces/IUserRepository";
 import UpdateUser from "./UpdateUser";
 import bcrypt from "bcryptjs"
+import UpdatePasswordUserDTO from '../DTO/UpdatePasswordUserDTO';
 
 jest.mock("bcryptjs")
 
@@ -16,11 +17,14 @@ describe('Teste da atualização do usuário', ()=>{
             createPaciente: jest.fn(),
             createEspecialista: jest.fn(),
             update: jest.fn(),
+            updateImage: jest.fn(),
+            updatePassword: jest.fn(),
             findByEmail: jest.fn(),
+            activeByEmail: jest.fn(),
             findByCpfOrCnpjUser: jest.fn(),
             findById: jest.fn(),
             findByIdWithPassword: jest.fn(),
-            remove: jest.fn(),
+            remove: jest.fn()
         };
         
         updateUser = new UpdateUser(userRepository);
@@ -32,69 +36,105 @@ describe('Teste da atualização do usuário', ()=>{
 
     it('Deve ser feito atualizações basicas', async () => {
         const updateData = new UpdateUserDTO();
-        updateData.nomeuser = 'Updated Name';
-        updateData.emailuser = 'updated@example.com';
+        updateData.NomeUser = 'Updated Name';
         
         const mockUser = {
-            idUser: 1,
-            nomeuser: 'Old name',
-            teluser: '88988888888',
-            genuser: 'Honda Civic',
-            emailuser: 'teste@gmail.com',
-            imgurluser: '',
-            senhauser: 'hashed-password'
+            IdUser: 1,
+            NomeUser: 'Old name',
+            TelUser: '88988888888',
+            GenUser: 'Honda Civic',
+            EmailUser: 'updated@example.com',
+            ImgUrlUser: '',
+            SenhaUser: 'hashed-password'
         } as User;
         
-        userRepository.findByIdWithPassword.mockResolvedValue(mockUser);
+        userRepository.findById.mockResolvedValue(mockUser); 
         
         userRepository.update.mockImplementation(async (user) => {
             return {
                 ...user,
-                nomeuser: updateData.nomeuser || user.nomeuser,
-                emailuser: updateData.emailuser || user.emailuser
+                NomeUser: updateData.NomeUser || user.NomeUser,
             } as User;
         });
         
         const result = await updateUser.execute(1, updateData);
         
-        expect(result.nomeuser).toBe('Updated Name');
-        expect(result.emailuser).toBe('updated@example.com');
-        expect(result.teluser).toBe('88988888888');
-        expect(result.genuser).toBe('Honda Civic');
+        expect(result.NomeUser).toBe('Updated Name');
+        expect(result.EmailUser).toBe('updated@example.com');
+        expect(result.TelUser).toBe('88988888888');
+        expect(result.GenUser).toBe('Honda Civic');
         
-        expect(userRepository.findByIdWithPassword).toHaveBeenCalledWith(1);
+        expect(userRepository.findById).toHaveBeenCalled();
         expect(userRepository.update).toHaveBeenCalled();
     });
 
     it('Espera erro por causa da senha antiga errada', async () => {
-        const updateData = new UpdateUserDTO();
-        updateData.nomeuser = 'Updated Name';
-        updateData.emailuser = 'updated@example.com';
-        updateData.senhaUser = {
+        const updateData = new UpdatePasswordUserDTO();
+        updateData.SenhaUser = {
             old: '123',
             first: 'nova-senha',
             second: 'nova-senha'
         };
         
         const mockUser = {
-            idUser: 1,
-            nomeuser: 'Old name',
-            teluser: '88988888888',
-            genuser: 'Honda Civic',
-            emailuser: 'teste@gmail.com',
-            imgurluser: '',
-            senhauser: 'hashed-password'
+            IdUser: 1,
+            NomeUser: 'Old name',
+            TelUser: '88988888888',
+            GenUser: 'Honda Civic',
+            EmailUser: 'teste@gmail.com',
+            ImgUrlUser: '',
+            SenhaUser: 'hashed-password'
         } as User;
         
         (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
         userRepository.findByIdWithPassword.mockResolvedValue(mockUser);
         
-        await expect(updateUser.execute(1, updateData)).rejects.toThrow('Senha antiga invalida');
+        await expect(updateUser.password(1, updateData)).rejects.toThrow('Senha antiga invalida');
 
-        const updateSpy = jest.spyOn(userRepository, 'update');
+        jest.spyOn(userRepository, 'updatePassword');
         
         expect(userRepository.findByIdWithPassword).toHaveBeenCalledWith(1);
-        expect(userRepository.update).not.toHaveBeenCalled();
+        expect(userRepository.updatePassword).not.toHaveBeenCalled();
+    });
+
+    it('Espera atualizar a senha', async () => {
+        const updateData = new UpdatePasswordUserDTO();
+        updateData.SenhaUser = {
+            old: 'hashed-password',
+            first: 'nova-senha',
+            second: 'nova-senha'
+        };
+        
+        const mockUser = {
+            IdUser: 1,
+            NomeUser: 'Old name',
+            TelUser: '88988888888',
+            GenUser: 'Honda Civic',
+            EmailUser: 'teste@gmail.com',
+            ImgUrlUser: '',
+            SenhaUser: 'hashed-password'
+        } as User;
+        
+        (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+        userRepository.findByIdWithPassword.mockResolvedValue(mockUser);
+        (bcrypt.hash as jest.Mock).mockImplementation((password, saltRounds) => {
+            return Promise.resolve('new-hashed-password');
+        });
+
+        userRepository.updatePassword.mockImplementation(async (user) => {
+            return {
+                ...user,
+                SenhaUser: 'new-hashed-password'
+            } as User;
+        });
+
+        const userSaved = await updateUser.password(1, updateData)
+        
+        expect(userSaved.SenhaUser).toEqual('new-hashed-password');
+        
+        expect(userRepository.findByIdWithPassword).toHaveBeenCalled();
+        expect(userRepository.updatePassword).toHaveBeenCalled();
     });
 });

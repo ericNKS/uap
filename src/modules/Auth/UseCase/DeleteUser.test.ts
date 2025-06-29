@@ -10,6 +10,9 @@ describe('Removendo usuario', () => {
             createPaciente: jest.fn(),
             createEspecialista: jest.fn(),
             update: jest.fn(),
+            updateImage: jest.fn(),
+            updatePassword: jest.fn(),
+            activeByEmail: jest.fn(),
             findByEmail: jest.fn(),
             findByCpfOrCnpjUser: jest.fn(),
             findById: jest.fn(),
@@ -20,13 +23,13 @@ describe('Removendo usuario', () => {
 
     it('O usuario existente tem que ficar com o status = n', async () => {
         const user: User = {
-            idUser: 1,
-            nomeuser: 'Eric',
-            emailuser: 'eric@gmail.com',
-            cpforcnpjuser: '24858927091',
-            genuser: 'Honda Civic',
-            rulesuser: 'RULE_USER',
-            stsativouser: 's',
+            IdUser: 1,
+            NomeUser: 'Eric',
+            EmailUser: 'eric@gmail.com',
+            CpfOrCnpjUser: '24858927091',
+            GenUser: 'Honda Civic',
+            RulesUser: 'RULE_USER',
+            StsAtivoUser: 's',
         } as User;
 
         userRepository.findById.mockResolvedValue(user);
@@ -35,9 +38,9 @@ describe('Removendo usuario', () => {
 
         const deleteUserService = new DeleteUser(userRepository);
 
-        if(!user.idUser) return;
+        if(!user.IdUser) return;
 
-        await expect(deleteUserService.execute(user.idUser)).resolves.not.toThrow();
+        await expect(deleteUserService.execute(user.IdUser)).resolves.not.toThrow();
 
         expect(userRepository.remove).toHaveBeenCalled()
     });

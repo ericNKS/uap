@@ -1,10 +1,11 @@
 import IUserRepository from "../Interfaces/IUserRepository";
-import User from "../Entities/User";
+import User, { IUser } from "../Entities/User";
 import mysql from 'mysql2/promise';
+import { Database } from "../../../config/database/Database";
 
 export default class UserRepository implements IUserRepository {
     constructor(
-        private db: mysql.Pool
+        private db: mysql.Pool = Database
     ) {}
     
     async createPaciente(user: User): Promise<User> {
@@ -15,27 +16,28 @@ export default class UserRepository implements IUserRepository {
             connection = await this.db.getConnection();
             
             await connection.execute(query, [
-                user.nomeuser,
-                user.emailuser,
-                user.senhauser,
-                user.teluser,
-                user.cpforcnpjuser,
-                user.genuser,
-                'pronome'
+                user.NomeUser,
+                user.EmailUser,
+                user.SenhaUser,
+                user.TelUser,
+                user.CpfOrCnpjUser,
+                user.GenUser,
+                user.PronomeUser,
             ]);
             
             const [newUsers] = await connection.execute<mysql.RowDataPacket[]>(
-                'SELECT iduser FROM users WHERE cpforcnpjuser = ? LIMIT 1',
-                [user.cpforcnpjuser]
+                'CALL spPegarUserCpfOrCnpj(?)',
+                [user.CpfOrCnpjUser]
             );
             
             if (newUsers.length === 0) {
                 throw new Error('Erro ao criar o paciente: Usuário não encontrado após inserção');
             }
             
-            const idUser = newUsers[0].iduser;
+            const idUser = newUsers[0][0].IdUser;
             
-            return {...user, idUser} as User;
+            const userWithId = {...user, IdUser: idUser};
+            return User.get(userWithId);
         } catch (error) {
             throw error;
         } finally {
@@ -51,19 +53,19 @@ export default class UserRepository implements IUserRepository {
             connection = await this.db.getConnection();
             
             await connection.execute(query, [
-                user.nomeuser,
-                user.emailuser,
-                user.senhauser,
-                user.teluser,
-                user.cpforcnpjuser,
-                user.crpuser,
-                user.genuser,
-                user.rulesuser
+                user.NomeUser,
+                user.EmailUser,
+                user.SenhaUser,
+                user.TelUser,
+                user.CpfOrCnpjUser,
+                user.CrpUser,
+                user.GenUser,
+                user.PronomeUser
             ]);
             
             const [newUsers] = await connection.execute<mysql.RowDataPacket[]>(
                 'SELECT iduser FROM users WHERE cpforcnpjuser = ? LIMIT 1',
-                [user.cpforcnpjuser]
+                [user.CpfOrCnpjUser]
             );
             
             if (newUsers.length === 0) {
@@ -72,104 +74,121 @@ export default class UserRepository implements IUserRepository {
             
             const idUser = newUsers[0].iduser;
             
-            return {...user, idUser} as User;
+            return {...user, IdUser: idUser} as User;
         } catch (error) {
             throw error;
         } finally {
             if (connection) connection.release();
         }
     }
+    async activeByEmail(user: User): Promise<User> {
+        const selectQuery = `
+            CALL spAtivarEmail(?)
+        `;
+
+        try {
+            await this.db.query(selectQuery, [user.IdUser]);
+            user.StsVerificarEmail = true;
+            return user;
+        } catch (error) {
+            throw error;
+        }
+    }
     
     async update(user: User): Promise<User> {
+        if(!user.IdUser) throw new Error('User sem id');
         const updateWithouPasswordQuery = `
             UPDATE
                 users u
             SET
                 u.NomeUser = ?,
-                u.EmailUser = ?,
                 u.TelUser = ?,
                 u.GenUser = ?,
-                u.ImgUrlUser = ?,
-                u.StsAtivoUser = ?
+                u.PronomeUser = ?
             WHERE
                 u.IdUser = ?;
-        `;
-        const updateWithPasswordQuery = `
-            UPDATE
-                users u
-            SET
-                u.SenhaUser = ?,
-                u.NomeUser = ?,
-                u.EmailUser = ?,
-                u.TelUser = ?,
-                u.GenUser = ?,
-                u.ImgUrlUser = ?,
-                u.StsAtivoUser = ?
-            WHERE
-                u.IdUser = ?;
-        `;
-
-        const selectQuery = `
-            SELECT
-                IdUser as idUser, NomeUser as nomeuser, 
-                EmailUser as emailuser, TelUser as teluser,
-                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
-                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
-            FROM users
-            WHERE IdUser = ?
         `;
 
         try {
             let updateQuery = updateWithouPasswordQuery;
             let values = [
-                user.nomeuser,
-                user.emailuser,
-                user.teluser,
-                user.genuser,
-                user.imgurluser,
-                user.stsativouser,
-                user.idUser
+                user.NomeUser,
+                user.TelUser,
+                user.GenUser,
+                user.PronomeUser,
+                user.IdUser,
             ];
 
-            if(user.senhauser){
-                updateQuery = updateWithPasswordQuery;
-                values = [
-                    user.senhauser,
-                    user.nomeuser,
-                    user.emailuser,
-                    user.teluser,
-                    user.genuser,
-                    user.imgurluser,
-                    user.stsativouser,
-                    user.idUser
-                ];    
-            }
+            await this.db.query(updateQuery, values);
+            
+            const userSaved = await this.findById(user.IdUser);
+            return userSaved;
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updatePassword(user: User): Promise<User> {
+        if(!user.IdUser) throw new Error('Usuario sem id');
+        const updateQuery = `
+            UPDATE
+                users u
+            SET
+                u.SenhaUser = ?
+            WHERE
+                u.IdUser = ?;
+        `;
+
+        try {
+            let values = [
+                user.SenhaUser,
+                user.IdUser,
+            ];
 
             await this.db.query(updateQuery, values);
 
-            const [rows] = await this.db.query(selectQuery, [user.idUser]);
-            const users = rows as User[];
-            return users[0];
+            const userSaved = await this.findById(user.IdUser);
+            return userSaved;
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateImage(user: User): Promise<User> {
+        if(!user.IdUser) throw new Error('Usuario sem id');
+        const updateQuery = `
+            CALL spAdicionarImgUsuario(?, ?)
+        `;
+
+        try {
+            let values = [
+                user.IdUser,
+                user.ImgUrlUser,
+            ];
+
+            await this.db.query(updateQuery, values);
+
+            const userSaved = await this.findById(user.IdUser);
+            return userSaved;
 
         } catch (error) {
             throw error;
         }
     }
     
-    async findByEmail(email: string): Promise<User> {
+    async findByEmail(email: string): Promise<User | null> {
         const query = `
-            SELECT
-                IdUser as idUser,
-                NomeUser as nomeuser,
-                SenhaUser as senhauser, EmailUser as emailuser,
-                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
-            FROM users
-            WHERE emailuser = ?
+            CALL spPegarUserEmail(?)
         `;
         try {
             const [rows] = await this.db.query(query, [email]);
-            const users = rows as User[];
-            return users[0];
+            const rowsArray = rows as Array<User[]>;
+            if(!rowsArray[0]) return null;
+            
+            const users = rowsArray[0][0];
+            return users;
         } catch (error) {
             throw error;
         }
@@ -190,20 +209,17 @@ export default class UserRepository implements IUserRepository {
         }
     }
     
-    async findById(id: number): Promise<User> {
+    async findById(id: number): Promise<IUser> {
         const query = `
-            SELECT
-                IdUser as idUser, NomeUser as nomeuser, 
-                EmailUser as emailuser, TelUser as teluser,
-                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
-                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
-            FROM users
-            WHERE idUser = ?
+            CALL spPegarUserId(?)
         `;
         try {
             const [rows] = await this.db.query(query, [id]);
-            const users = rows as User[];
-            return users[0];
+
+            const rowsArray = rows as Array<IUser[]>;
+            const users = rowsArray[0][0];
+            
+            return users;
         } catch (error) {
             throw error;
         }
@@ -212,10 +228,10 @@ export default class UserRepository implements IUserRepository {
     async findByIdWithPassword(id: number): Promise<User> {
         const query = `
             SELECT
-                IdUser as idUser, NomeUser as nomeuser, SenhaUser as senhauser,
-                EmailUser as emailuser, TelUser as teluser,
-                CpfOrCnpjUser as cpforunpjUuser, CrpUser as crpuser,
-                ImgUrlUser as imgurluser, GenUser as genuser, RulesUser as rulesuser, StsAtivoUser as stsativouser
+                IdUser, NomeUser, SenhaUser,
+                EmailUser, TelUser,
+                CpfOrCnpjUser, CrpUser,
+                ImgUrlUser, GenUser, RulesUser, StsAtivoUser
             FROM users
             WHERE idUser = ?
         `;
@@ -238,7 +254,7 @@ export default class UserRepository implements IUserRepository {
             connection = await this.db.getConnection();
 
             await connection.execute(query, [
-                user.idUser,
+                user.IdUser,
             ]);
         } catch (error) {
             throw error

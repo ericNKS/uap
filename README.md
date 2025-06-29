@@ -38,14 +38,18 @@ Links base: `/api`
 - **Body Request**:
 ```json
 {
-	"nomeUser": string,
-	"emailUser": string,
-	"senhaUser": {
+	"NomeUser": string,
+	"EmailUser": string,
+	"SenhaUser": {
 	    "first": string,
 	    "second": string // verificação da senha
 	},
-	"cpfOrCnpjUser": string // 11 ou 16 caracteres,
-	"genUser": string
+	"CpfOrCnpjUser": string, // 11 ou 16 caracteres
+	"CrpUser": string, // opcional
+	"GenUser": string,
+	"PronomeUser": string,
+	"TelUser": string, // opcional
+	"RulesUser": string // opcional = RULE_PACIENTE
 }
 ```
 
@@ -65,8 +69,8 @@ Links base: `/api`
 - **Body Request**:
 ```json
 {
-	"emailUser": string,
-	"senhaUser": string
+	"EmailUser": string,
+	"SenhaUser": string
 }
 ```
  **HEADER Request**: `Content-Type: application/json`
@@ -96,15 +100,17 @@ Links base: `/api/users`
 - **Response**: `200 ok`
 ```json
 {
-	"idUser": int,
-	"nomeuser": string,
-	"emailuser": string,
-	"teluser": string,
-	"cpforunpjUuser": string,
-	"crpuser": string | null,
-	"imgurluser": string | null,
-	"genuser": string,
-	"rulesuser": string,
+	"IdUser": int,
+	"NomeUser": string,
+	"EmailUser": string,
+	"TelUser": string,
+	"CpfOrCnpjUser": string,
+	"CrpUser": string | null,
+	"ImgUrlUser": string | null,
+	"GenUser": string,
+	"PronomeUser": string,
+	"RulesUser": string,
+	"StsVerificarEmail": boolean, // 1 ou 0
 	"stsativouser": string // 's' ou 'n'
 }
 ```
@@ -120,15 +126,17 @@ Links base: `/api/users`
 - **Response**: `200 ok`
 ```json
 {
-	"idUser": int,
-	"nomeuser": string,
-	"emailuser": string,
-	"teluser": string,
-	"cpforunpjUuser": string,
-	"crpuser": string | null,
-	"imgurluser": string | null,
-	"genuser": string,
-	"rulesuser": string,
+	"IdUser": int,
+	"NomeUser": string,
+	"EmailUser": string,
+	"TelUser": string,
+	"CpfOrCnpjUser": string,
+	"CrpUser": string | null,
+	"ImgUrlUser": string | null,
+	"GenUser": string,
+	"PronomeUser": string,
+	"RulesUser": string,
+	"StsVerificarEmail": boolean, // 1 ou 0
 	"stsativouser": string // 's' ou 'n'
 }
 ```
@@ -136,12 +144,12 @@ Links base: `/api/users`
 - **HEADER Request**: `Bearer token | Content-Type: multipart/form-data para envio de imagem`
 ```json
 {
-	"nomeuser": string,
-	"emailuser": string,
-	"teluser": string,
-	"genuser": string,
-	"imgurluser": file // jpeg, png, gif, webp ,svg+xml | max: 10MB
-	"senhaUser": {
+	"NomeUser": string,
+	"EmailUser": string,
+	"TelUser": string,
+	"GenUser": string,
+	"ImgUrlUser": file, // jpeg, png, gif, webp ,svg+xml | max: 10MB
+	"SenhaUser": {
 		"old": string, // senha antiga do usuário
     	"first": string,
 	    "second": string // verificação da senha
@@ -181,15 +189,17 @@ Links base: `/api/users`
 ```json
 [
 	{
-		"idUser": int,
-		"nomeuser": string,
-		"emailuser": string,
-		"teluser": string,
-		"cpforunpjUuser": string,
-		"crpuser": string | null,
-		"imgurluser": string | null,
-		"genuser": string,
-		"rulesuser": string,
+		"IdUser": int,
+		"NomeUser": string,
+		"EmailUser": string,
+		"TelUser": string,
+		"CpfOrCnpjUser": string,
+		"CrpUser": string | null,
+		"ImgUrlUser": string | null,
+		"GenUser": string,
+		"PronomeUser": string,
+		"RulesUser": string,
+		"StsVerificarEmail": boolean,
 		"stsativouser": string // 's' ou 'n'
 	}
 ]

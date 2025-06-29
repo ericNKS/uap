@@ -1,28 +1,66 @@
-export default class User {
-    public readonly idUser?: number = 0;
-    public nomeuser: string = '';
-    public emailuser: string = '';
-    public senhauser: string = '';
-    public teluser?: string = '';
-    public cpforcnpjuser: string = '';
-    public crpuser?: string = '';
-    public imgurluser?: string = '';
-    public genuser: string = '';
-    public rulesuser: string = 'paciente';
-    public stsativouser: string = '';
+export interface IUser {
+    IdUser: number,
+    NomeUser: string,
+    EmailUser: string,
+    SenhaUser: string,
+    TelUser?: string,
+    CpfOrCnpjUser: string,
+    CrpUser?: string,
+    ImgUrlUser?: string,
+    GenUser: string,
+    PronomeUser: string,
+    RulesUser: string,
+    StsVerificarEmail: boolean,
+    StsAtivoUser: string
+}
 
-    public toJson(): Record<string, any> {
+export default class User {
+    public readonly IdUser?: number = 0;
+    public NomeUser: string = '';
+    public EmailUser: string = '';
+    public SenhaUser: string = '';
+    public TelUser?: string = '';
+    public CpfOrCnpjUser: string = '';
+    public CrpUser?: string = '';
+    public ImgUrlUser?: string = '';
+    public GenUser: string = '';
+    public PronomeUser: string = '';
+    public RulesUser: string = 'RULE_PACIENTE';
+    public StsVerificarEmail: boolean = false;
+    public StsAtivoUser: string = '';
+
+    public static toJson(user: IUser): Record<string, any> {
         return {
-            idUser: this.idUser,
-            nomeuser: this.nomeuser,
-            emailuser: this.emailuser,
-            teluser: this.teluser,
-            cpforcnpjuser: this.cpforcnpjuser,
-            crpuser: this.crpuser,
-            imgurluser: this.imgurluser,
-            genuser: this.genuser,
-            rulesuser: this.rulesuser,
-            stsativouser: this.stsativouser,
+            IdUser: user.IdUser,
+            NomeUser: user.NomeUser,
+            EmailUser: user.EmailUser,
+            TelUser: user.TelUser,
+            CpfOrCnpjUser: user.CpfOrCnpjUser,
+            CrpUser: user.CrpUser,
+            ImgUrlUser: user.ImgUrlUser,
+            GenUser: user.GenUser,
+            PronomeUser: user.PronomeUser,
+            RulesUser: user.RulesUser,
+            StsVerificarEmail: user.StsVerificarEmail,
+            StsAtivoUser: user.StsAtivoUser,
         }
+    }
+
+    static get(body: IUser): User {
+        return {
+            IdUser: body.IdUser,
+            NomeUser: body.NomeUser,
+            EmailUser: body.EmailUser,
+            SenhaUser: body.SenhaUser,
+            TelUser: body.TelUser,
+            CpfOrCnpjUser: body.CpfOrCnpjUser,
+            CrpUser: body.CrpUser,
+            ImgUrlUser: body.ImgUrlUser,
+            GenUser: body.GenUser,
+            PronomeUser: body.PronomeUser,
+            RulesUser: body.RulesUser,
+            StsVerificarEmail: body.StsVerificarEmail,
+            StsAtivoUser: body.StsAtivoUser,
+        } as User
     }
 }
