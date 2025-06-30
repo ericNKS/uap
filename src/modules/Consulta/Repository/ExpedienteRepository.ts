@@ -29,7 +29,7 @@ export default class ExpedienteRepository implements IExpedienteRepository{
 
     public async listarExpedientes(IdUser: number): Promise<Array<Expediente>> {
         const query = `
-            CALL spListarExpedientes(?);
+            CALL spListarExpedientesAtivos(?);
         `;
 
         try {

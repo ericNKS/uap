@@ -77,7 +77,8 @@ export default class OfficeHoursController {
             });
         } catch (error) {
             return reply.code(500).send({
-                error: 'Algo inesperado aconteceu, tente novamente mais tarde'
+                error: 'Algo inesperado aconteceu, tente novamente mais tarde',
+                message: error
             });
         }
     }
