@@ -7,6 +7,7 @@ export interface IUser {
     CpfOrCnpjUser: string,
     CrpUser?: string,
     ImgUrlUser?: string,
+    DescricaoUser: string,
     GenUser: string,
     PronomeUser: string,
     RulesUser: string,
@@ -22,6 +23,7 @@ export default class User {
     public TelUser?: string = '';
     public CpfOrCnpjUser: string = '';
     public CrpUser?: string = '';
+    public DescricaoUser: string = '';
     public ImgUrlUser?: string = '';
     public GenUser: string = '';
     public PronomeUser: string = '';
@@ -36,6 +38,7 @@ export default class User {
             EmailUser: user.EmailUser,
             TelUser: user.TelUser,
             CpfOrCnpjUser: user.CpfOrCnpjUser,
+            DescricaoUser: user.DescricaoUser,
             CrpUser: user.CrpUser,
             ImgUrlUser: user.ImgUrlUser,
             GenUser: user.GenUser,
@@ -54,6 +57,7 @@ export default class User {
             SenhaUser: body.SenhaUser,
             TelUser: body.TelUser,
             CpfOrCnpjUser: body.CpfOrCnpjUser,
+            DescricaoUser: body.DescricaoUser,
             CrpUser: body.CrpUser,
             ImgUrlUser: body.ImgUrlUser,
             GenUser: body.GenUser,

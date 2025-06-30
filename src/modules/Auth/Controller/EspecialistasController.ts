@@ -25,6 +25,7 @@ export default class EspecialistaController {
                 TelUser: string;
                 CpfOrCnpjUser?: string;
                 CrpUser: string;
+                DescricaoUser: string;
                 ImgUrlUser: string | null;
                 GenUser: string;
                 PronomeUser: string;
