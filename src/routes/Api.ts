@@ -5,6 +5,7 @@ import AuthMiddleware from "../config/Middleware/AuthMiddleware";
 import ImageController from "../modules/File/Controller/ImageController";
 import OfficeHoursController from "../modules/Consulta/Controller/OfficeHoursController";
 import ConsultaController from "../modules/Consulta/Controller/ConsultasController";
+import EspecialistaController from "../modules/Auth/Controller/EspecialistasController";
 
 const handleRule = (rules?: Array<string>): Record<string, any> => {
     let middleware = new AuthMiddleware(rules || []);
@@ -29,6 +30,8 @@ export const PrivateRoute = (app: FastifyInstance) => {
     app.patch('/api/users', handleRule(), UserController.update.bind(UserController));
     app.patch('/api/users/image', handleRule(), UserController.updateImage.bind(UserController));
     app.patch('/api/users/password', handleRule(), UserController.updatePassword.bind(UserController));
+    
+    app.get('/api/especialista', handleRule(), EspecialistaController.index.bind(EspecialistaController));
 
     // Office Hours
     app.get('/api/expedientes/:especialista', handleRule(), OfficeHoursController.list.bind(OfficeHoursController));
