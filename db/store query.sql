@@ -244,7 +244,7 @@ BEGIN
 			 sfFormatarCrp(u.CrpUser) AS 'CrpUser',
 			 u.ImgUrlUser,
 			 u.GenUser,
-			 u.pPronomeUser
+			 u.PronomeUser
 	FROM users u
 	WHERE u.StsAtivoUser = 's'
 	AND u.RulesUser = 'RULE_ESPECIALISTA_ATIVO';	
