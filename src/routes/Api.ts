@@ -47,7 +47,7 @@ export const EspecialistaRoute = (app:FastifyInstance) => {
     // Office Hours
     const rule = ['RULE_ADMIN', 'RULE_ESPECIALISTA_ATIVO'];
 
-    app.patch('/api/especialista', handleRule(), EspecialistaController.index.bind(EspecialistaController));
+    app.patch('/api/especialista', handleRule(), EspecialistaController.adicionarDescricao.bind(EspecialistaController));
 
     app.post('/api/expedientes', handleRule(rule), OfficeHoursController.store.bind(OfficeHoursController));
     app.patch('/api/expedientes/:id', handleRule(rule), OfficeHoursController.changeStatusOfficeHours.bind(OfficeHoursController));
